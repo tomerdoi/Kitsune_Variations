@@ -1,0 +1,51 @@
+import KitNET as kit
+import numpy as np
+import pandas as pd
+import time
+import os
+
+
+
+
+DSpathList=["D:/datasets/KitsuneDatasets/etterArp.csv","D:/datasets/KitsuneDatasets/fuzzing.csv","D:/datasets/KitsuneDatasets/Passive_Sniffing_3-005.csv","D:/datasets/KitsuneDatasets/phiddle_09_08.csv","D:/datasets/KitsuneDatasets/port_scan.csv","D:/datasets/KitsuneDatasets/RTSP.csv","D:/datasets/KitsuneDatasets/RTSP_4-003.csv","D:/datasets/KitsuneDatasets/SSDP_lab_1-002.csv","D:/datasets/KitsuneDatasets/SSL_lab_1-004.csv","D:/datasets/KitsuneDatasets/ssl_renego.csv","D:/datasets/KitsuneDatasets/SYN_lab_1-001.csv","D:/datasets/KitsuneDatasets/pcapParsed_Cameras.csv"]
+
+
+miniBatches=[1000,5000,10000,15000,20000]
+
+# KitNET params:
+for idx in range(5,100):
+    for mb in miniBatches:
+        for DSpath in DSpathList:
+
+            maxAE = idx  # maximum size for any autoencoder in the ensemble layer
+            if os.path.isfile(DSpath.replace('.csv','_RMSE_Scores_MiniBatch_'+str(mb)+'maxAE_'+str(maxAE)+'_.csv'))==True:
+                continue
+
+            print("Reading Sample dataset...")
+            X = pd.read_csv(DSpath, header=None).as_matrix()  # an m-by-n dataset with m observations
+
+            if DSpath.__contains__('pcapParsed_Cameras')==True:
+
+                FMgrace = 30000 #the number of instances taken to learn the feature mapping (the ensemble's architecture)
+                ADgrace = 121662-FMgrace #the number of instances used to train the anomaly detector (ensemble itself)
+            else:
+                FMgrace = 500000  # the number of instances taken to learn the feature mapping (the ensemble's architecture)
+                ADgrace = 1000000 - FMgrace  # the number of instances used to train the anomaly detector (ensemble itself)
+
+            # Build KitNET
+            K = kit.KitNET(X.shape[1],mb,maxAE,FMgrace,ADgrace)
+            RMSEs = np.zeros(X.shape[0]) # a place to save the scores
+
+            print("Running KitNET:")
+            start = time.time()
+            # Here we process (train/execute) each individual observation.
+            # In this way, X is essentially a stream, and each observation is discarded after performing process() method.
+            for i in range(X.shape[0]):
+                if i % 1000 == 0:
+                    print(i)
+                RMSEs[i] = K.process(X[i,]) #will train during the grace periods, then execute on all the rest.
+            with open (DSpath.replace('.csv','_RMSE_Scores_MiniBatch_'+str(mb)+'maxAE_'+str(maxAE)+'_.csv'),'w') as outRMSE:
+                for rmse in RMSEs:
+                    outRMSE.write(str(rmse)+'\n')
+            stop = time.time()
+            print("Complete. Time elapsed: "+ str(stop - start))
