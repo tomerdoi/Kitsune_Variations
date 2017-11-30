@@ -1,13 +1,13 @@
 import numpy as np
 import dA as AE
 import corClust as CC
-
+from LSTM import LSTM
 # This class represents a KitNET machine learner.
 # KitNET is a lightweight online anomaly detection algorithm based on an ensemble of autoencoders.
 # For more information and citation, please see our NDSS'18 paper: Kitsune: An Ensemble of Autoencoders for Online Network Intrusion Detection
 # For licensing information, see the end of this document
 
-class KitNET:
+class KitNETGen:
     #n: the number of features in your input dataset (i.e., x \in R^n)
     #m: the maximum size of any autoencoder in the ensemble layer
     #AD_grace_period: the number of instances the network will learn from before producing anomaly scores
@@ -94,15 +94,17 @@ class KitNET:
             ## OutputLayer
             return self.outputLayer.execute(S_l1)
 
-    def __createAD__(self,bufferSize=1000):
+    def __createAD__(self,bufferSize=1):
         # construct ensemble layer
         for map in self.v:
             params = AE.dA_params(n_visible=len(map), n_hidden=0, lr=self.lr, corruption_level=0, gracePeriod=0, hiddenRatio=self.hr)
             self.ensembleLayer.append(AE.dA(params,bufferSize))
 
         # construct output layer
-        params = AE.dA_params(len(self.v), n_hidden=0, lr=self.lr, corruption_level=0, gracePeriod=0, hiddenRatio=self.hr)
-        self.outputLayer = AE.dA(params,bufferSize)
+        self.outputLayer=LSTM(ensembleSize=len(self.ensembleLayer))
+        #params = AE.dA_params(len(self.v), n_hidden=0, lr=self.lr, corruption_level=0, gracePeriod=0, hiddenRatio=self.hr)
+        #self.outputLayer = AE.dA(params,bufferSize)
+
 
 # Copyright (c) 2017 Yisroel Mirsky
 #

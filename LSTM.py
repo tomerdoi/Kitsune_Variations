@@ -72,11 +72,20 @@ class LSTM (OutputLayerModel_I):
 
 
     def train(self,x):
+
+        # for e in range(len(x)):
+        #     x[e]=0.3
+
         thresh=1
-        NumOfInstances = len(x)
+        NumOfInstances =1
+        x = [x]
+        vecLen=len(x[0])
+
 
         x = np.reshape(x, (NumOfInstances, vecLen, additionalDim))
+
         y = np.zeros((thresh, additionalDim))
+
 
         self.model.fit(x,y,  epochs=10)
 
@@ -84,8 +93,8 @@ class LSTM (OutputLayerModel_I):
 
     def execute (self,x):
         thresh = 1
-        NumOfInstances = len(x)
-
+        NumOfInstances = 1
+        vecLen = len(x)
         x = np.reshape(x, (NumOfInstances, vecLen, additionalDim))
         y = np.ones((thresh, additionalDim))
         scores = self.model.predict(x)
@@ -94,10 +103,10 @@ class LSTM (OutputLayerModel_I):
 
 
         print('finished execution...')
-    def __init__ (self):
+    def __init__ (self, ensembleSize):
         print('Build model...')
         model = Sequential()
-        model.add(lstm_m(128, input_shape=(vecLen, additionalDim)))
+        model.add(lstm_m(128, input_shape=(ensembleSize, additionalDim)))
 
         # additional layer
         model.add(Dense(10))
@@ -112,6 +121,6 @@ class LSTM (OutputLayerModel_I):
 
 
 #BuildLSTM('D:/datasets/KitsuneDatasets/fuzzing.csv', 1000000)
-lstm=LSTM()
-lstm.train([[i for i in range(115)]])
-lstm.execute([[i for i in range(115)]])
+# lstm=LSTM()
+# lstm.train([[i for i in range(115)]])
+# lstm.execute([[i for i in range(115)]])

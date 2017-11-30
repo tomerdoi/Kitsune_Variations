@@ -138,7 +138,7 @@ class dA(OutputLayerModel_I):
         return self.n < self.params.gracePeriod
 
 
-par=dA_params(hiddenRatio=0.3)
-d=dA(params=par)
-d.train(numpy.array([1,2,3,4,5]))
-print('finished...')
+# par=dA_params(hiddenRatio=0.3)
+# d=dA(params=par)
+# d.train(numpy.array([1,2,3,4,5]))
+# print('finished...')
