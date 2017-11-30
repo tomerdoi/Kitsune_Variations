@@ -1,7 +1,7 @@
 import numpy as np
+from OutputLayerModel_I import OutputLayerModel_I
 
-
-class PositiveToyRBM(object):
+class PositiveToyRBM(OutputLayerModel_I):
 
     def __init__(self, num_visible, num_hidden, w=None):
         self.num_visible = num_visible
@@ -25,31 +25,34 @@ class PositiveToyRBM(object):
         # pretty print
         return list([list(i) for i in arr])
 
-    def try_reconstruct(self, data):
-        h = self.threshold(np.dot(data, self.w))
+    def try_reconstruct(self, x):
+        h = self.threshold(np.dot(x, self.w))
         recon = self.threshold(np.dot(h, self.w.T))
         print ('thresh sum is '+str(np.sum(recon)))
         return np.sum(recon) == 0
 
-    def train(self, data, epochs=1000):
-        data = np.array(data)
+    def train(self, x, epochs=10):
+        x = np.array(x)
         for e in range(epochs):
             delta_w = []
-            for example in data:
+            for example in x:
 
                 h = self.threshold(np.dot(example.reshape(1,self.num_visible), self.w))
                 delta_w.append(self.hebbian(example, h))
             # average
             delta_w = np.mean(delta_w, axis=0)
             self.w += delta_w
-            result = self.try_reconstruct(data)
+            result = self.try_reconstruct(x)
             if result==True:
                 print ('Successded!!!')
             print ('epoch', e, 'delta w =', self.pp(delta_w), 'new weights =', self.pp(self.w), 'reconstruction ok?', result)
+    def execute (self,x):
+        print('executed!')
+
 
 model=PositiveToyRBM(115,10)
 import pandas as pd
 DSpath='D:/datasets/KitsuneDatasets/ps2.csv'
 X = pd.read_csv(DSpath, header=None).as_matrix()  # an m-by-n dataset with m observations
-model.train(data=X)
+model.train(x=X)
 

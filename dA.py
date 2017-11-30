@@ -27,6 +27,7 @@ import sys
 import numpy
 from utils import *
 import json
+from OutputLayerModel_I import OutputLayerModel_I
 
 class dA_params:
     def __init__(self,n_visible = 5, n_hidden = 3, lr=0.001, corruption_level=0.0, gracePeriod = 10000, hiddenRatio=None):
@@ -38,7 +39,7 @@ class dA_params:
         self.hiddenRatio = hiddenRatio
 
 
-class dA:
+class dA(OutputLayerModel_I):
     def __init__(self, params,bufferSize=10000):
         self.params = params
 
@@ -135,3 +136,9 @@ class dA:
 
     def inGrace(self):
         return self.n < self.params.gracePeriod
+
+
+par=dA_params(hiddenRatio=0.3)
+d=dA(params=par)
+d.train(numpy.array([1,2,3,4,5]))
+print('finished...')
