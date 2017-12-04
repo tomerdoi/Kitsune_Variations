@@ -71,10 +71,9 @@ class machine (object):
     def addInstance (self,rmse):
 
         self.countRMSE+=1
-        if rmse>self.RMSE_max:
-            self.RMSE_max=rmse
-        if self.RMSE_min<rmse:
-            self.RMSE_min=rmse
+
+        self.RMSE_max=max(self.RMSE_max,rmse)
+        self.RMSE_min=min(self.RMSE_min,rmse)
 
         n=self.countRMSE
         self.RMSE_std=math.sqrt(((float(n-2)/float(n-1))*float(math.pow(self.RMSE_std,2)))+float((1/n))*(rmse-self.RMSE_avg))
