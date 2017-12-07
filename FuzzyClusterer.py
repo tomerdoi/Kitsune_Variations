@@ -21,7 +21,7 @@ from abc import ABCMeta, abstractmethod
 import abc
 import bisect
 
-#implements Incremental Fuzzy C Medoids
+#implements Incremental dendogram
 #data: 2d array dataset recordsXfeatures
 
 def clusterUsingIncrementalFuzzyDendogram(data, maxSizeOfCluster=10, maxFuz=3):
