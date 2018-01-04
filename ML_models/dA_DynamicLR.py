@@ -38,7 +38,7 @@ class dA_params:
 
 
 class dA(OutputLayerModel_I):
-    def __init__(self, params):
+    def __init__(self, params,bufferSize=10):
         self.params = params
 
         if self.params.hiddenRatio is not None:
@@ -60,7 +60,7 @@ class dA(OutputLayerModel_I):
         self.hbias = numpy.zeros(self.params.n_hidden)  # initialize h bias 0
         self.vbias = numpy.zeros(self.params.n_visible)  # initialize v bias 0
         self.W_prime = self.W.T
-
+        self.bufferSize=bufferSize
         self.bufferedInstances=[]
 
 
@@ -96,11 +96,18 @@ class dA(OutputLayerModel_I):
         else:
             tilde_x = x
 
+        #self.bufferedInstances.append(tilde_x)
 
+        #if self.n < self.bufferSize != 0:
+            #return self.execute(tilde_x)
 
-        tilde_x = numpy.array(self.bufferedInstances)
+        #lastSample = tilde_x
+
+        #tilde_x = numpy.array(self.bufferedInstances)
         y = self.get_hidden_values(tilde_x)
         z = self.get_reconstructed_input(y)
+
+        exeScore=self.execute(x)
 
         L_h2 = x - z
         L_h1 = numpy.dot(L_h2, self.W) * y * (1 - y)
@@ -108,15 +115,16 @@ class dA(OutputLayerModel_I):
         L_hbias = L_h1
         L_W = numpy.dot(tilde_x.T, L_h1) + numpy.dot(L_h2.T, y)
 
+        self.params.lr=self.params.lr*(1+1/(1+float(exeScore)))
         self.W += self.params.lr * L_W
         self.hbias += self.params.lr * numpy.mean(L_hbias, axis=0)
         self.vbias += self.params.lr * numpy.mean(L_vbias, axis=0)
 
-        self.bufferedInstances = []
-        self.n=0
+        #self.bufferedInstances = []
+        #self.n=0
 
-        return numpy.sqrt(numpy.mean(L_h2**2)) #the RMSE reconstruction error during training
-
+        #return numpy.sqrt(numpy.mean(L_h2**2)) #the RMSE reconstruction error during training
+        return exeScore
 
 
     def reconstruct(self, x):

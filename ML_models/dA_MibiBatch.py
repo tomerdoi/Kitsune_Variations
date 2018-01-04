@@ -38,7 +38,7 @@ class dA_params:
 
 
 class dA(OutputLayerModel_I):
-    def __init__(self, params):
+    def __init__(self, params,bufferSize=10):
         self.params = params
 
         if self.params.hiddenRatio is not None:
@@ -60,7 +60,7 @@ class dA(OutputLayerModel_I):
         self.hbias = numpy.zeros(self.params.n_hidden)  # initialize h bias 0
         self.vbias = numpy.zeros(self.params.n_visible)  # initialize v bias 0
         self.W_prime = self.W.T
-
+        self.bufferSize=bufferSize
         self.bufferedInstances=[]
 
 
@@ -96,7 +96,12 @@ class dA(OutputLayerModel_I):
         else:
             tilde_x = x
 
+        self.bufferedInstances.append(tilde_x)
 
+        if self.n < self.bufferSize != 0:
+            return self.execute(tilde_x)
+
+        lastSample = tilde_x
 
         tilde_x = numpy.array(self.bufferedInstances)
         y = self.get_hidden_values(tilde_x)
@@ -115,8 +120,8 @@ class dA(OutputLayerModel_I):
         self.bufferedInstances = []
         self.n=0
 
-        return numpy.sqrt(numpy.mean(L_h2**2)) #the RMSE reconstruction error during training
-
+        #return numpy.sqrt(numpy.mean(L_h2**2)) #the RMSE reconstruction error during training
+        return self.execute(lastSample)
 
 
     def reconstruct(self, x):

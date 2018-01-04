@@ -1,4 +1,4 @@
-from ML_models import dA as AE
+from ML_models import dA_MibiBatch as AE
 import numpy as np
 
 from Clusterers import corClust as CC
