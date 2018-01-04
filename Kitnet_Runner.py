@@ -11,7 +11,7 @@ DSpathList=["D:/datasets/KitsuneDatasets/ps2.csv","D:/datasets/KitsuneDatasets/e
 
 
 #miniBatches=[1000,1,5000,10000,15000,20000]
-miniBatches=[1000,1]
+miniBatches=[10,1]
 #miniBatches=[1]
 # KitNET params:
 for idx in range(10,11):

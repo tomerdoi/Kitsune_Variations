@@ -38,7 +38,7 @@ class dA_params:
 
 
 class dA(OutputLayerModel_I):
-    def __init__(self, params,bufferSize=10000):
+    def __init__(self, params,bufferSize=10):
         self.params = params
 
         if self.params.hiddenRatio is not None:
@@ -98,7 +98,7 @@ class dA(OutputLayerModel_I):
 
         self.bufferedInstances.append(tilde_x)
 
-        if self.n % self.bufferSize != 0:
+        if self.n < self.bufferSize != 0:
             return self.execute(tilde_x)
 
         lastSample = tilde_x
@@ -111,7 +111,7 @@ class dA(OutputLayerModel_I):
         L_h1 = numpy.dot(L_h2, self.W) * y * (1 - y)
         L_vbias = L_h2
         L_hbias = L_h1
-        L_W = numpy.outer(tilde_x.T, L_h1) + numpy.outer(L_h2.T, y)
+        L_W = numpy.dot(tilde_x.T, L_h1) + numpy.dot(L_h2.T, y)
 
         self.W += self.params.lr * L_W
         self.hbias += self.params.lr * numpy.mean(L_hbias, axis=0)

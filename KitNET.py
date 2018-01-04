@@ -96,7 +96,7 @@ class KitNET:
             ## OutputLayer
             return self.outputLayer.execute(S_l1)
 
-    def __createAD__(self,bufferSize=1000):
+    def __createAD__(self,bufferSize=10):
         # construct ensemble layer
         for map in self.v:
             params = AE.dA_params(n_visible=len(map), n_hidden=0, lr=self.lr, corruption_level=0, gracePeriod=0, hiddenRatio=self.hr)
