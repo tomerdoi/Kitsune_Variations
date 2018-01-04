@@ -37,8 +37,9 @@ class dA_params:
         self.hiddenRatio = hiddenRatio
 
 
+
 class dA(OutputLayerModel_I):
-    def __init__(self, params,bufferSize=10):
+    def __init__(self, params):
         self.params = params
 
         if self.params.hiddenRatio is not None:
@@ -47,7 +48,7 @@ class dA(OutputLayerModel_I):
         # for 0-1 normlaization
         self.norm_max = numpy.ones((self.params.n_visible,)) * -numpy.Inf
         self.norm_min = numpy.ones((self.params.n_visible,)) * numpy.Inf
-        self.n = 0
+
 
         self.rng = numpy.random.RandomState(1234)
 
@@ -60,8 +61,8 @@ class dA(OutputLayerModel_I):
         self.hbias = numpy.zeros(self.params.n_hidden)  # initialize h bias 0
         self.vbias = numpy.zeros(self.params.n_visible)  # initialize v bias 0
         self.W_prime = self.W.T
-        self.bufferSize=bufferSize
-        self.bufferedInstances=[]
+        self.threshold = 0.0
+
 
 
     def get_corrupted_input(self, input, corruption_level):
@@ -80,9 +81,6 @@ class dA(OutputLayerModel_I):
         return sigmoid(numpy.dot(hidden, self.W_prime) + self.vbias)
 
     def train(self, x):
-        self.n = self.n + 1
-
-
 
         # update norms
         self.norm_max[x > self.norm_max] = x[x > self.norm_max]
@@ -96,14 +94,9 @@ class dA(OutputLayerModel_I):
         else:
             tilde_x = x
 
-        self.bufferedInstances.append(tilde_x)
 
-        if self.n < self.bufferSize != 0:
-            return self.execute(tilde_x)
 
-        lastSample = tilde_x
 
-        tilde_x = numpy.array(self.bufferedInstances)
         y = self.get_hidden_values(tilde_x)
         z = self.get_reconstructed_input(y)
 
@@ -111,17 +104,17 @@ class dA(OutputLayerModel_I):
         L_h1 = numpy.dot(L_h2, self.W) * y * (1 - y)
         L_vbias = L_h2
         L_hbias = L_h1
-        L_W = numpy.dot(tilde_x.T, L_h1) + numpy.dot(L_h2.T, y)
+        L_W = numpy.outer(tilde_x.T, L_h1) + numpy.outer(L_h2.T, y)
 
         self.W += self.params.lr * L_W
         self.hbias += self.params.lr * numpy.mean(L_hbias, axis=0)
         self.vbias += self.params.lr * numpy.mean(L_vbias, axis=0)
 
-        self.bufferedInstances = []
-        self.n=0
 
-        #return numpy.sqrt(numpy.mean(L_h2**2)) #the RMSE reconstruction error during training
-        return self.execute(lastSample)
+        exeScore=numpy.sqrt(numpy.mean(L_h2**2)) #the RMSE reconstruction error during training
+        self.threshold=max(self.threshold,exeScore)
+        return exeScore
+
 
 
     def reconstruct(self, x):
@@ -130,14 +123,19 @@ class dA(OutputLayerModel_I):
         return z
 
     def execute(self, x): #returns MSE of the reconstruction of x
-        #if self.n < self.params.gracePeriod:
-         #   return 0.0
-        #else:
+        if self.n < self.params.gracePeriod:
+            return 0.0
+        else:
             # 0-1 normalize
             x = (x - self.norm_min) / (self.norm_max - self.norm_min + 0.0000000000000001)
             z = self.reconstruct(x)
             rmse = numpy.sqrt(((x - z) ** 2).mean()) #MSE
-            return rmse
+            #return rmse
+            if rmse<=self.threshold:
+                return 0
+            else:
+                return 1
+
 
     def inGrace(self):
         return self.n < self.params.gracePeriod

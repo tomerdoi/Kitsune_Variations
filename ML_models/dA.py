@@ -61,7 +61,7 @@ class dA(OutputLayerModel_I):
         self.vbias = numpy.zeros(self.params.n_visible)  # initialize v bias 0
         self.W_prime = self.W.T
 
-        self.bufferedInstances=[]
+
 
 
     def get_corrupted_input(self, input, corruption_level):
@@ -98,7 +98,6 @@ class dA(OutputLayerModel_I):
 
 
 
-        tilde_x = numpy.array(self.bufferedInstances)
         y = self.get_hidden_values(tilde_x)
         z = self.get_reconstructed_input(y)
 
@@ -106,14 +105,12 @@ class dA(OutputLayerModel_I):
         L_h1 = numpy.dot(L_h2, self.W) * y * (1 - y)
         L_vbias = L_h2
         L_hbias = L_h1
-        L_W = numpy.dot(tilde_x.T, L_h1) + numpy.dot(L_h2.T, y)
+        L_W = numpy.outer(tilde_x.T, L_h1) + numpy.outer(L_h2.T, y)
 
         self.W += self.params.lr * L_W
         self.hbias += self.params.lr * numpy.mean(L_hbias, axis=0)
         self.vbias += self.params.lr * numpy.mean(L_vbias, axis=0)
 
-        self.bufferedInstances = []
-        self.n=0
 
         return numpy.sqrt(numpy.mean(L_h2**2)) #the RMSE reconstruction error during training
 

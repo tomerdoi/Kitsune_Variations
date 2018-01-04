@@ -38,7 +38,7 @@ class dA_params:
 
 
 class dA(OutputLayerModel_I):
-    def __init__(self, params,bufferSize=10):
+    def __init__(self, params):
         self.params = params
 
         if self.params.hiddenRatio is not None:
@@ -60,8 +60,7 @@ class dA(OutputLayerModel_I):
         self.hbias = numpy.zeros(self.params.n_hidden)  # initialize h bias 0
         self.vbias = numpy.zeros(self.params.n_visible)  # initialize v bias 0
         self.W_prime = self.W.T
-        self.bufferSize=bufferSize
-        self.bufferedInstances=[]
+
 
 
     def get_corrupted_input(self, input, corruption_level):
@@ -113,9 +112,10 @@ class dA(OutputLayerModel_I):
         L_h1 = numpy.dot(L_h2, self.W) * y * (1 - y)
         L_vbias = L_h2
         L_hbias = L_h1
-        L_W = numpy.dot(tilde_x.T, L_h1) + numpy.dot(L_h2.T, y)
+        L_W = numpy.outer(tilde_x.T, L_h1) + numpy.outer(L_h2.T, y)
 
-        self.params.lr=self.params.lr*(1+1/(1+float(exeScore)))
+        Sn=float(exeScore)
+        self.params.lr=self.params.lr*(1+1/(1+Sn))
         self.W += self.params.lr * L_W
         self.hbias += self.params.lr * numpy.mean(L_hbias, axis=0)
         self.vbias += self.params.lr * numpy.mean(L_vbias, axis=0)
@@ -133,9 +133,9 @@ class dA(OutputLayerModel_I):
         return z
 
     def execute(self, x): #returns MSE of the reconstruction of x
-        if self.n < self.params.gracePeriod:
-            return 0.0
-        else:
+        #if self.n < self.params.gracePeriod:
+         #   return 0.0
+        #else:
             # 0-1 normalize
             x = (x - self.norm_min) / (self.norm_max - self.norm_min + 0.0000000000000001)
             z = self.reconstruct(x)
