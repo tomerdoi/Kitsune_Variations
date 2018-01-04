@@ -1,26 +1,8 @@
-import sys
-from utils import *
-import json
-from keras.layers import LSTM
-import numpy as np
-import math
 import pandas as pd
 #import theano
-import keras as ks
-from keras.models import Sequential
-from keras.utils import to_categorical
-from keras import optimizers
-from keras.optimizers import RMSprop
-
-from keras.layers import Dense, Activation
-from keras.datasets import mnist
-import numpy
-from numpy import *
-import tensorflow as tf
-from abc import ABCMeta, abstractmethod
-import abc
-import bisect
-
+import random
+import numpy as np
+import math
 
 #Implementation of a state machine in order to overcome adversarial machine learning attacks.
 
@@ -32,8 +14,8 @@ class machine (object):
         self.RMSE_avg=0.0
         self.RMSE_std=0.0
         self.RMSE_var=0.0
-        self.RMSE_min=np.inf
-        self.RMSE_max=0
+        self.RMSE_min=float(10000)
+        self.RMSE_max=float(0)
 
         self.instancesBuffer=[]
         self.maxInstancesBufferSize=instBufferSize
@@ -51,7 +33,7 @@ class machine (object):
         self.qcod=0.0
 
         #states handler
-        self.statesList=[]
+        self.statesList={}
 
         st1=state('normal')
         st2=state('suspect')
@@ -64,7 +46,7 @@ class machine (object):
 
         #raw RMSE data
         self.sumRMSE=0.0
-        self.countRMSE=0
+        self.countRMSE=10
 
 
 
@@ -72,8 +54,8 @@ class machine (object):
 
         self.countRMSE+=1
 
-        self.RMSE_max=max(self.RMSE_max,rmse)
-        self.RMSE_min=min(self.RMSE_min,rmse)
+        self.RMSE_max=max(self.RMSE_max,float(rmse))
+        self.RMSE_min=min(self.RMSE_min,float(rmse))
 
         n=self.countRMSE
         self.RMSE_std=math.sqrt(((float(n-2)/float(n-1))*float(math.pow(self.RMSE_std,2)))+float((1/n))*(rmse-self.RMSE_avg))
@@ -94,12 +76,26 @@ class machine (object):
         self.Q1= S.index[percentage_rank >= 0.25][0]
         self.Q3=index75 = S.index[percentage_rank >= 0.75][0]
         self.RMSE_IQR=self.Q3-self.Q1
-        self.RMSE_vtmr=float(math.pow(self.RMSE_std,2)/self.RMSE_avg)
-        self.qcod=float(float(self.Q3-self.Q1)/float(self.Q3+self.Q1))
+        self.RMSE_vtmr=float(math.pow(self.RMSE_std,2)/(self.RMSE_avg+1))
+        self.qcod=float(float(self.Q3-self.Q1)/float(self.Q3+self.Q1+1))
+
+        #thresh updating
+
+        #state moving
+        if rmse==self.RMSE_max and self.RMSE_IQR>=0.3 and self.RMSE_vtmr>0.3 and self.qcod>0.3:
+            self.moveToState('suspect')
+        elif rmse==self.RMSE_max and self.RMSE_IQR>=0.5 and self.RMSE_vtmr>0.5 and self.qcod>0.5:
+            self.moveToState('malicious')
+        elif  rmse>self.RMSE_min and rmse<self.RMSE_max and self.RMSE_IQR<0.05 and self.RMSE_vtmr<0.05 and self.qcod<0.05:
+            self.moveToState('normal')
+
+
+
 
     def moveToState (self,stName):
-        self.currState=self.statesList[stName]
-
+        if self.currState.toString!=stName:
+            self.currState=self.statesList[stName]
+            print ('moved to state '+str(stName))
     def printCurrentState (self):
         print ('Current state is '+str(self.currState.toString()))
 
@@ -109,7 +105,17 @@ class state (object):
         print('State '+str(name)+' was initiated...')
 
     def toString (self):
-        return name
+        return self.name
+
+def runner ():
+    m=machine(10)
+    for i in range(100):
+
+        rmse=float(random.uniform(0,10))
+        #print (str(rmse)+' was sent')
+        m.addInstance(rmse)
+
+runner()
 
 
 

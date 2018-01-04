@@ -1,16 +1,17 @@
-import KitNET as kit
+import os
+import time
+
 import numpy as np
 import pandas as pd
-import time
-import os
-
-from  KitNETGeneric import KitNETGen
+#from  KitNETGeneric import KitNETGen
+from KitNET import KitNET
 
 print('Started Kitnet_Runner...')
 DSpathList=["D:/datasets/KitsuneDatasets/ps2.csv","D:/datasets/KitsuneDatasets/etterArp.csv","D:/datasets/KitsuneDatasets/fuzzing.csv","D:/datasets/KitsuneDatasets/Passive_Sniffing_3-005.csv","D:/datasets/KitsuneDatasets/phiddle_09_08.csv","D:/datasets/KitsuneDatasets/port_scan.csv","D:/datasets/KitsuneDatasets/RTSP.csv","D:/datasets/KitsuneDatasets/RTSP_4-003.csv","D:/datasets/KitsuneDatasets/SSDP_lab_1-002.csv","D:/datasets/KitsuneDatasets/SSL_lab_1-004.csv","D:/datasets/KitsuneDatasets/ssl_renego.csv","D:/datasets/KitsuneDatasets/SYN_lab_1-001.csv","D:/datasets/KitsuneDatasets/pcapParsed_Cameras.csv"]
 
 
-miniBatches=[1000,1,5000,10000,15000,20000]
+#miniBatches=[1000,1,5000,10000,15000,20000]
+miniBatches=[1000,1]
 #miniBatches=[1]
 # KitNET params:
 for idx in range(10,11):
@@ -36,7 +37,7 @@ for idx in range(10,11):
                 ADgrace = 1000000 - FMgrace  # the number of instances used to train the anomaly detector (ensemble itself)
 
             # Build KitNET
-            K = KitNETGen(n=X.shape[1],bufferSize= mb,max_autoencoder_size= maxAE,FM_grace_period= FMgrace,AD_grace_period= ADgrace)
+            K = KitNET(n=X.shape[1],bufferSize= mb,max_autoencoder_size= maxAE,FM_grace_period= FMgrace,AD_grace_period= ADgrace)
             RMSEs = np.zeros(X.shape[0]) # a place to save the scores
 
             print("Running KitNET:")

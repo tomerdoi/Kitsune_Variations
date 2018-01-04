@@ -1,23 +1,11 @@
-import sys
-
-from utils import *
-import json
-from keras.layers import LSTM as lstm_m
-import numpy as np
-import math
 import pandas as pd
-#import theano
-import keras as ks
-from keras.models import Sequential
-from keras.utils import to_categorical
-from keras import optimizers
-from keras.optimizers import RMSprop
-
 from keras.layers import Dense, Activation
-from keras.datasets import mnist
-import numpy
-from numpy import *
-import tensorflow as tf
+from keras.layers import LSTM as lstm_m
+# import theano
+from keras.models import Sequential
+from keras.optimizers import RMSprop
+import numpy as np
+
 from OutputLayerModel_I import OutputLayerModel_I
 
 additionalDim = 1
@@ -120,7 +108,7 @@ class LSTM (OutputLayerModel_I):
         print('LSTM initialized...')
 
 
-#BuildLSTM('D:/datasets/KitsuneDatasets/fuzzing.csv', 1000000)
-# lstm=LSTM()
-# lstm.train([[i for i in range(115)]])
-# lstm.execute([[i for i in range(115)]])
+BuildLSTM('D:/datasets/KitsuneDatasets/fuzzing.csv', 1000000)
+lstm=LSTM()
+lstm.train([[i for i in range(115)]])
+lstm.execute([[i for i in range(115)]])

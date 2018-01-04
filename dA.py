@@ -23,11 +23,9 @@
 
 # Portions of this code have been adapted from Yusuke Sugomori's code on GitHub: https://github.com/yusugomori/DeepLearning
 
-import sys
-import numpy
-from utils import *
-import json
 from OutputLayerModel_I import OutputLayerModel_I
+from utils import *
+
 
 class dA_params:
     def __init__(self,n_visible = 5, n_hidden = 3, lr=0.001, corruption_level=0.0, gracePeriod = 10000, hiddenRatio=None):
@@ -99,7 +97,7 @@ class dA(OutputLayerModel_I):
 
         if self.n % self.bufferSize != 0:
             self.bufferedInstances.append(tilde_x)
-            return
+            return self.execute(x)
         self.bufferedInstances=[]
         self.bufferedInstances.append(tilde_x)
         tilde_x = numpy.array(self.bufferedInstances)
@@ -138,7 +136,7 @@ class dA(OutputLayerModel_I):
         return self.n < self.params.gracePeriod
 
 
-# par=dA_params(hiddenRatio=0.3)
-# d=dA(params=par)
-# d.train(numpy.array([1,2,3,4,5]))
-# print('finished...')
+par=dA_params(hiddenRatio=0.3)
+d=dA(params=par)
+d.train(numpy.array([1,2,3,4,5]))
+print('finished...')

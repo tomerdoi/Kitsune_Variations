@@ -1,5 +1,7 @@
 import numpy as np
+
 from OutputLayerModel_I import OutputLayerModel_I
+
 
 class PositiveToyRBM(OutputLayerModel_I):
 

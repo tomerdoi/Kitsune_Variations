@@ -1,10 +1,3 @@
-import KitNET as kit
-import numpy as np
-import pandas as pd
-import time
-import os
-
-
 def createDarpaLabels ():
     totalPackets=24144866
     TotalPacketsUntilExecute=16869729
