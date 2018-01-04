@@ -83,6 +83,7 @@ class dA(OutputLayerModel_I):
         self.n = self.n + 1
 
 
+
         # update norms
         self.norm_max[x > self.norm_max] = x[x > self.norm_max]
         self.norm_min[x < self.norm_min] = x[x < self.norm_min]
@@ -95,11 +96,13 @@ class dA(OutputLayerModel_I):
         else:
             tilde_x = x
 
-        if self.n % self.bufferSize != 0:
-            self.bufferedInstances.append(tilde_x)
-            return self.execute(x)
-        self.bufferedInstances=[]
         self.bufferedInstances.append(tilde_x)
+
+        if self.n % self.bufferSize != 0:
+            return self.execute(tilde_x)
+
+        lastSample = tilde_x
+
         tilde_x = numpy.array(self.bufferedInstances)
         y = self.get_hidden_values(tilde_x)
         z = self.get_reconstructed_input(y)
@@ -113,7 +116,12 @@ class dA(OutputLayerModel_I):
         self.W += self.params.lr * L_W
         self.hbias += self.params.lr * numpy.mean(L_hbias, axis=0)
         self.vbias += self.params.lr * numpy.mean(L_vbias, axis=0)
-        return numpy.sqrt(numpy.mean(L_h2**2)) #the RMSE reconstruction error during training
+
+        self.bufferedInstances = []
+        self.n=0
+
+        #return numpy.sqrt(numpy.mean(L_h2**2)) #the RMSE reconstruction error during training
+        return self.execute(lastSample)
 
 
     def reconstruct(self, x):
