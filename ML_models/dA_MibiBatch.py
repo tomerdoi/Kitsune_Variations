@@ -130,9 +130,9 @@ class dA(OutputLayerModel_I):
         return z
 
     def execute(self, x): #returns MSE of the reconstruction of x
-        if self.n < self.params.gracePeriod:
-            return 0.0
-        else:
+        #if self.n < self.params.gracePeriod:
+         #   return 0.0
+        #else:
             # 0-1 normalize
             x = (x - self.norm_min) / (self.norm_max - self.norm_min + 0.0000000000000001)
             z = self.reconstruct(x)
