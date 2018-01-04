@@ -1,12 +1,12 @@
+import numpy as np
 import pandas as pd
 from keras.layers import Dense, Activation
 from keras.layers import LSTM as lstm_m
 # import theano
 from keras.models import Sequential
 from keras.optimizers import RMSprop
-import numpy as np
 
-from OutputLayerModel_I import OutputLayerModel_I
+from ML_models.OutputLayerModel_I import OutputLayerModel_I
 
 additionalDim = 1
 vecLen = 115

@@ -1,8 +1,8 @@
+from ML_models import dA as AE
 import numpy as np
 
-import corClust as CC
-import dA as AE
-from LSTM import LSTM
+from Clusterers import corClust as CC
+from ML_models.LSTM import LSTM
 
 
 # This class represents a KitNET machine learner.

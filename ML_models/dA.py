@@ -23,8 +23,8 @@
 
 # Portions of this code have been adapted from Yusuke Sugomori's code on GitHub: https://github.com/yusugomori/DeepLearning
 
-from OutputLayerModel_I import OutputLayerModel_I
-from utils import *
+from Facilities.utils import *
+from ML_models.OutputLayerModel_I import OutputLayerModel_I
 
 
 class dA_params:

@@ -1,7 +1,7 @@
 import numpy as np
 
-import corClust as CC
-import dA as AE
+from Clusterers import corClust as CC
+from ML_models import dA as AE
 
 
 # This class represents a KitNET machine learner.
