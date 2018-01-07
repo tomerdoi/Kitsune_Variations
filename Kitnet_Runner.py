@@ -19,7 +19,8 @@ for idx in range(10,11):
         for DSpath in DSpathList:
 
             maxAE = idx  # maximum size for any autoencoder in the ensemble layer
-            if os.path.isfile(DSpath.replace('.csv','_RMSE_Scores_MiniBatch_'+str(mb)+'maxAE_'+str(maxAE)+'_.csv'))==True:
+            fileName = DSpath.replace('.csv','_RMSE_Scores_MiniBatch_maxClusterSize_' + str(maxAE) + '_miniBatch_' + str(mb) + '_.csv')
+            if os.path.isfile(fileName) == True:
                 continue
 
             print("Reading Sample dataset...")
