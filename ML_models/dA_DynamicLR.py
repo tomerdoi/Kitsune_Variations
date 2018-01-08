@@ -115,7 +115,7 @@ class dA(OutputLayerModel_I):
         L_W = numpy.outer(tilde_x.T, L_h1) + numpy.outer(L_h2.T, y)
 
         Sn=float(exeScore)
-        self.params.lr=self.params.lr*(1+1/(1+Sn))
+        self.params.lr=self.params.lr*(float(1+1/(1+Sn)))
         self.W += self.params.lr * L_W
         self.hbias += self.params.lr * numpy.mean(L_hbias, axis=0)
         self.vbias += self.params.lr * numpy.mean(L_vbias, axis=0)
