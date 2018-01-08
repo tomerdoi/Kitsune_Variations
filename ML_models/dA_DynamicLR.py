@@ -88,7 +88,7 @@ class dA(OutputLayerModel_I):
         self.norm_min[x < self.norm_min] = x[x < self.norm_min]
 
         # 0-1 normalize
-        x = (x - self.norm_min) / (self.norm_max - self.norm_min + 0.0000000000000001)
+        x = (x - self.norm_min) / (self.norm_max - self.norm_min + 1)
 
         if self.params.corruption_level > 0.0:
             tilde_x = self.get_corrupted_input(x, self.params.corruption_level)
