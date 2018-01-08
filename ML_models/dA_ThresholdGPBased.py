@@ -87,7 +87,7 @@ class dA(OutputLayerModel_I):
         self.norm_min[x < self.norm_min] = x[x < self.norm_min]
 
         # 0-1 normalize
-        x = (x - self.norm_min) / (self.norm_max - self.norm_min +1)
+        x = (x - self.norm_min) / (self.norm_max - self.norm_min + 1)
 
         if self.params.corruption_level > 0.0:
             tilde_x = self.get_corrupted_input(x, self.params.corruption_level)
@@ -123,22 +123,20 @@ class dA(OutputLayerModel_I):
         return z
 
     def execute(self, x): #returns MSE of the reconstruction of x
-        if self.n < self.params.gracePeriod:
-            return 0.0
+
+        # 0-1 normalize
+        x = (x - self.norm_min) / (self.norm_max - self.norm_min + 1)
+        z = self.reconstruct(x)
+        rmse = numpy.sqrt(((x - z) ** 2).mean()) #MSE
+        #return rmse
+        if rmse<=float(self.threshold/2.0):
+            return 0
         else:
-            # 0-1 normalize
-            x = (x - self.norm_min) / (self.norm_max - self.norm_min + 0.0000000000000001)
-            z = self.reconstruct(x)
-            rmse = numpy.sqrt(((x - z) ** 2).mean()) #MSE
-            #return rmse
-            if rmse<=self.threshold:
-                return 0
-            else:
-                return 1
+            return 1
 
 
-    def inGrace(self):
-        return self.n < self.params.gracePeriod
+    #def inGrace(self):
+     #   return self.n < self.params.gracePeriod
 
 
 par=dA_params(hiddenRatio=0.3)
