@@ -46,6 +46,7 @@ class KitNET:
         self.FM = CC.corClust(self.n) #incremental feature cluatering for the feature mapping process
         self.ensembleLayer = []
         self.outputLayer = None
+        self.bufferSize=bufferSize
 
     #If FM_grace_period+AM_grace_period has passed, then this function executes KitNET on x. Otherwise, this function learns from x.
     #x: a numpy array of length n
@@ -65,7 +66,7 @@ class KitNET:
             self.FM.update(x)
             if self.n_trained == self.FM_grace_period: #If the feature mapping should be instantiated
                 self.v = self.FM.cluster(self.m)
-                self.__createAD__()
+                self.__createAD__(bufferSize=self.bufferSize)
                 print("The Feature-Mapper found a mapping: "+str(self.n)+" features to "+str(len(self.v))+" autoencoders.")
                 print("Feature-Mapper: execute-mode, Anomaly-Detector: train-mode")
         else: #train
@@ -94,7 +95,10 @@ class KitNET:
                 xi = x[self.v[a]]
                 S_l1[a] = self.ensembleLayer[a].execute(xi)
             ## OutputLayer
-            return self.outputLayer.execute(S_l1)
+
+            exeScore=self.outputLayer.execute(S_l1)
+
+            return exeScore
 
     def __createAD__(self,bufferSize=10):
         # construct ensemble layer

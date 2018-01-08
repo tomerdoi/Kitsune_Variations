@@ -38,7 +38,7 @@ class dA_params:
 
 
 class dA(OutputLayerModel_I):
-    def __init__(self, params,bufferSize=10):
+    def __init__(self, params,bufferSize=100):
         self.params = params
 
         if self.params.hiddenRatio is not None:
@@ -83,13 +83,18 @@ class dA(OutputLayerModel_I):
         self.n = self.n + 1
 
 
-
         # update norms
         self.norm_max[x > self.norm_max] = x[x > self.norm_max]
         self.norm_min[x < self.norm_min] = x[x < self.norm_min]
 
+
+
         # 0-1 normalize
-        x = (x - self.norm_min) / (self.norm_max - self.norm_min + 0.0000000000000001)
+        x = (x - self.norm_min) / (self.norm_max - self.norm_min + 1)
+
+
+
+
 
         if self.params.corruption_level > 0.0:
             tilde_x = self.get_corrupted_input(x, self.params.corruption_level)
@@ -99,7 +104,9 @@ class dA(OutputLayerModel_I):
         self.bufferedInstances.append(tilde_x)
 
         if self.n < self.bufferSize != 0:
-            return self.execute(tilde_x)
+            exeScore=self.execute(tilde_x)
+
+            return exeScore
 
         lastSample = tilde_x
 
@@ -121,7 +128,9 @@ class dA(OutputLayerModel_I):
         self.n=0
 
         #return numpy.sqrt(numpy.mean(L_h2**2)) #the RMSE reconstruction error during training
-        return self.execute(lastSample)
+        exeScore= self.execute(lastSample)
+
+        return exeScore
 
 
     def reconstruct(self, x):
@@ -134,7 +143,7 @@ class dA(OutputLayerModel_I):
          #   return 0.0
         #else:
             # 0-1 normalize
-            x = (x - self.norm_min) / (self.norm_max - self.norm_min + 0.0000000000000001)
+            x = (x - self.norm_min) / (self.norm_max - self.norm_min + 1)
             z = self.reconstruct(x)
             rmse = numpy.sqrt(((x - z) ** 2).mean()) #MSE
             return rmse
@@ -145,5 +154,6 @@ class dA(OutputLayerModel_I):
 
 par=dA_params(hiddenRatio=0.3)
 d=dA(params=par)
-d.train(numpy.array([1,2,3,4,5]))
+for i in range(1000):
+    d.train(numpy.array([i+1,i+2,i+3,i+4,i+5]))
 print('finished...')
