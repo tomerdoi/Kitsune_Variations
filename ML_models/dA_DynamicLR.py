@@ -88,7 +88,7 @@ class dA(OutputLayerModel_I):
         self.norm_min[x < self.norm_min] = x[x < self.norm_min]
 
         # 0-1 normalize
-        x = (x - self.norm_min) / (self.norm_max - self.norm_min + 1)
+        x = (x - self.norm_min) / (self.norm_max - self.norm_min + 2)
 
         if self.params.corruption_level > 0.0:
             tilde_x = self.get_corrupted_input(x, self.params.corruption_level)
@@ -106,7 +106,7 @@ class dA(OutputLayerModel_I):
         y = self.get_hidden_values(tilde_x)
         z = self.get_reconstructed_input(y)
 
-        exeScore=self.execute(x)
+        exeScore=self.execute(tilde_x)
 
         L_h2 = x - z
         L_h1 = numpy.dot(L_h2, self.W) * y * (1 - y)
@@ -137,7 +137,7 @@ class dA(OutputLayerModel_I):
          #   return 0.0
         #else:
             # 0-1 normalize
-            x = (x - self.norm_min) / (self.norm_max - self.norm_min + 0.0000000000000001)
+            x = (x - self.norm_min) / (self.norm_max - self.norm_min + 1)
             z = self.reconstruct(x)
             rmse = numpy.sqrt(((x - z) ** 2).mean()) #MSE
             return rmse
