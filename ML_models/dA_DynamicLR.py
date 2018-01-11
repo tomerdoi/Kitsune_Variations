@@ -88,7 +88,7 @@ class dA(OutputLayerModel_I):
         self.norm_min[x < self.norm_min] = x[x < self.norm_min]
 
         # 0-1 normalize
-        x = (x - self.norm_min) / (self.norm_max - self.norm_min + 2)
+        x = (x - self.norm_min) / (self.norm_max - self.norm_min + 1)
 
         if self.params.corruption_level > 0.0:
             tilde_x = self.get_corrupted_input(x, self.params.corruption_level)
@@ -115,7 +115,7 @@ class dA(OutputLayerModel_I):
         L_W = numpy.outer(tilde_x.T, L_h1) + numpy.outer(L_h2.T, y)
 
         Sn=float(exeScore)
-        self.params.lr=self.params.lr*(float(1+1/(1+Sn)))
+        self.params.lr=self.params.lr*(float(1/(1+Sn)))
         self.W += self.params.lr * L_W
         self.hbias += self.params.lr * numpy.mean(L_hbias, axis=0)
         self.vbias += self.params.lr * numpy.mean(L_vbias, axis=0)
