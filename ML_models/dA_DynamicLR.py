@@ -114,8 +114,9 @@ class dA(OutputLayerModel_I):
         L_hbias = L_h1
         L_W = numpy.outer(tilde_x.T, L_h1) + numpy.outer(L_h2.T, y)
 
-        Sn=float(exeScore)
+        Sn=float(numpy.sqrt(numpy.mean(L_h2**2)))
         self.params.lr=self.params.lr*(float(1/(1+Sn)))
+
         self.W += self.params.lr * L_W
         self.hbias += self.params.lr * numpy.mean(L_hbias, axis=0)
         self.vbias += self.params.lr * numpy.mean(L_vbias, axis=0)
@@ -124,7 +125,8 @@ class dA(OutputLayerModel_I):
         #self.n=0
 
         #return numpy.sqrt(numpy.mean(L_h2**2)) #the RMSE reconstruction error during training
-        return exeScore
+        return Sn
+        #return exeScore
 
 
     def reconstruct(self, x):
