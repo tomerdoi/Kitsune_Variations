@@ -38,7 +38,7 @@ class dA_params:
 
 
 class dA(OutputLayerModel_I):
-    def __init__(self, params, bufferSize=0):
+    def __init__(self, params, bufferSize=1):
         self.params = params
 
         if self.params.hiddenRatio is not None:
