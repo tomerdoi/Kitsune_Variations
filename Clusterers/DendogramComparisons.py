@@ -19,6 +19,7 @@ def dendoRun():
     miniBatches=[1]
     # KitNET params:
     flag=2
+    
     maps=[]
     for idx in range(10,11):
         for mb in miniBatches:
