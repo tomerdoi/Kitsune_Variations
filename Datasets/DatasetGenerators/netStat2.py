@@ -26,6 +26,7 @@ class netStat:
         self.HT_HpHp = af.incStatHT_2D(limit=self.SessionLimit)
 
 
+
     def findDirection(self,IPtype,srcIP,dstIP,eth_src,eth_dst): #cpp: this is all given to you in the direction string of the instance (NO NEED FOR THIS FUNCTION)
         if IPtype==0: #is IPv4
             lstP = srcIP.rfind('.')
