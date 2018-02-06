@@ -18,6 +18,7 @@ class netStat:
         self.SessionLimit = HostSimplexLimit*self.HostLimit*self.HostLimit #*2 since each dual creates 2 entries in memory
         self.MAC_HostLimit = self.HostLimit*10
 
+
         #HTs
         self.HT_jit = af.incStatHT(limit=self.HostLimit*self.HostLimit)
         self.HT_MI = af.incStatHT(limit=self.MAC_HostLimit)
