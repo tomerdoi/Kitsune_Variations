@@ -100,9 +100,27 @@ def plotDendogram (DSpath, limit, outJPG, FMgrace, ADgrace, mb, maxAE):
 
 lim=100
 while lim<=100000:
-    plotDendogram('D:/datasets/rec1.csv', lim, 'dendoImages/im'+str(lim)+'.png', 100000, 1000, 1, 10)
+    plotDendogram('D:/datasets/MT.csv', lim, 'dendoImages/im'+str(int(lim/100))+'.png', 100000, 1000, 1, 10)
     lim+=100
 
+def corrClustBasedDendoPlots ():
+    DSpath = 'D:/datasets/MT.csv'
+    X = pd.read_csv(DSpath, header=None).as_matrix()  # an m-by-n dataset with m observations
+    K = KitNET.KitNET(n=X.shape[1], bufferSize=1, max_autoencoder_size=10, FM_grace_period=100000,AD_grace_period=1000)
+    for i in range(X.shape[0]):
+        if i % 1000 == 0:
+            print(i)
+        K.process(X[i,])
+
+    plt.imshow(K.FM.corrDist())
+    plt.colorbar()
+    plt.title(str(i) + " Packets")
+    indstr = str(i)
+    filename = str("0" * (6 - len(indstr))) + indstr
+    plt.savefig(filename + ".png")
+    plt.cla()
+    plt.clf()
+    plt.close()
 
 
 

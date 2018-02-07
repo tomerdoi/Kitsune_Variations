@@ -1,7 +1,7 @@
 import numpy as np
 
 from Clusterers import corClust as CC
-from ML_models import dA_MibiBatch as AE
+from ML_models import dA as AE
 
 
 # This class represents a KitNET machine learner.
