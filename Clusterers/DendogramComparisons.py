@@ -123,6 +123,42 @@ def corrClustBasedDendoPlots ():
     plt.close()
 
 
+# DSpath = 'D:/datasets/MT.csv'
+# X = pd.read_csv(DSpath, header=None).as_matrix()  # an m-by-n dataset with m observations
+# K = KitNET.KitNET(n=X.shape[1], bufferSize=1, max_autoencoder_size=10, FM_grace_period=100000,
+#                   AD_grace_period=1000)
+# for i in range(0, 100000, 100):
+#     print(i)
+#     for j in range(i, i + 100):
+#         K.process(X[j,])
+#     plt.imshow(K.FM.corrDist())
+#     plt.colorbar()
+#     plt.title(str(i) + " Packets")
+#     indstr = str(i)
+#     filename = str("0" * (6 - len(indstr))) + indstr
+#     plt.savefig(filename + ".png")
+#     plt.cla()
+#     plt.clf()
+#     plt.close()
+#
+# DSpath = 'C:/Users/tomerdoi/Desktop/webTraffic.csv'
+# X = pd.read_csv(DSpath, header=None).as_matrix()  # an m-by-n dataset with m observations
+# K = KitNET.KitNET(n=X.shape[1], bufferSize=mb, max_autoencoder_size=maxAE, FM_grace_period=FMgrace,
+#                   AD_grace_period=ADgrace)
+# for i in range(X.shape[0]):
+#     if i % 1000 == 0:
+#         print(i)
+#     K.process(X[i,])
+#
+# plt.imshow(K.FM.corrDist())
+# plt.colorbar()
+# plt.title(str(i) + " Packets")
+# indstr = str(i)
+# filename = str("0" * (6 - len(indstr))) + indstr
+# plt.savefig(filename + ".png")
+# plt.cla()
+# plt.clf()
+# plt.close()
 
 
 
