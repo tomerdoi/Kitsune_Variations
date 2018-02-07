@@ -1,7 +1,7 @@
 import numpy as np
 import ML_models.GMM as gmm
 from Clusterers import corClust as CC
-from ML_models import dA_MibiBatch as AE
+from ML_models import dA as AE
 import math
 
 # This class represents a KitNET machine learner.
@@ -20,7 +20,7 @@ class KitNET:
     #feature_map: One may optionally provide a feature map instead of learning one. The map must be a list,
     #           where the i-th entry contains a list of the feature indices to be assingned to the i-th autoencoder in the ensemble.
     #           For example, [[2,5,3],[4,0,1],[6,7]]
-    def __init__(self,n,bufferSize=1000,max_autoencoder_size=10,FM_grace_period=None,AD_grace_period=10000,learning_rate=0.1,hidden_ratio=0.75, feature_map = None,gmm_batch=1000, GMMgrace=20000):
+    def __init__(self,n,bufferSize=1000,max_autoencoder_size=10,FM_grace_period=None,AD_grace_period=10000,learning_rate=0.1,hidden_ratio=0.75, feature_map = None,gmm_batch=1000, GMMgrace=1000):
         # Parameters:
         self.AD_grace_period = AD_grace_period
         if FM_grace_period is None:
@@ -49,10 +49,12 @@ class KitNET:
         self.outputLayer = None
         self.bufferSize=bufferSize
 
-        self.gmm=gmm.GMM(minBatch=gmm_batch)
+        self.gmm=gmm.GMM(n_components=7, minBatch=gmm_batch)
         self.gmm_batch_buffer=[]
         self.gmm_batch_size=gmm_batch
         self.GMMgrace=GMMgrace
+        self.PreGMM_ADtraingrace=int(self.AD_grace_period/2);
+
 
     #If FM_grace_period+AM_grace_period has passed, then this function executes KitNET on x. Otherwise, this function learns from x.
     #x: a numpy array of length n
@@ -77,24 +79,38 @@ class KitNET:
                 print("Feature-Mapper: execute-mode, Anomaly-Detector: train-mode")
         else: #train
 
+
+
+            ##Initial pre-GMM train
+
+            if self.n_trained<self.FM_grace_period+self.PreGMM_ADtraingrace:
+                S_l1 = np.zeros(len(self.ensembleLayer))
+                for a in range(len(self.ensembleLayer)):
+                    # make sub instance for autoencoder 'a'
+                    xi = x[self.v[a]]
+                    S_l1[a] = self.ensembleLayer[a].train(xi)
+                ## OutputLayer
+                self.outputLayer.train(S_l1)
+
             ## Ensemble Layer
             S_l1 = np.zeros(len(self.ensembleLayer))
             for a in range(len(self.ensembleLayer)):
                 # make sub instance for autoencoder 'a'
                 xi = x[self.v[a]]
                 S_l1[a] = self.ensembleLayer[a].execute(xi)
+            ## OutputLayer
             rmse = self.outputLayer.execute(S_l1)
 
-            #GMM train
-            if self.gmm.gmm_n<self.GMMgrace:
+            ##GMM train
+            if  self.n_trained>self.FM_grace_period+self.PreGMM_ADtraingrace and self.gmm.gmm_n<self.GMMgrace:
 
                 if rmse!=0 and len(self.gmm_batch_buffer)<self.gmm_batch_size:
                     self.gmm_batch_buffer.append(rmse)
-                elif len(self.gmm_batch_buffer)<self.gmm_batch_size:
+                elif len(self.gmm_batch_buffer)>=self.gmm_batch_size:
                     self.gmm.train_batch(self.gmm_batch_buffer)
                     self.gmm_batch_buffer=[]
-
-            if (self.gmm.execute(rmse)>0.3 and  self.gmm.gmm_n>=self.GMMgrace) or self.gmm.gmm_n<self.GMMgrace :
+            ## AD train
+            if ( self.gmm.execute(rmse)>0.3 and  self.gmm.gmm_n>=self.GMMgrace) or self.gmm.gmm_n<self.GMMgrace :
                 S_l1 = np.zeros(len(self.ensembleLayer))
                 for a in range(len(self.ensembleLayer)):
                     # make sub instance for autoencoder 'a'
@@ -128,11 +144,11 @@ class KitNET:
     def __createAD__(self,bufferSize=10):
         # construct ensemble layer
         for map in self.v:
-            params = AE.dA_params(n_visible=len(map), n_hidden=0, lr=self.lr, corruption_level=0, gracePeriod=0, hiddenRatio=self.hr)
+            params = AE.dA_params(n_visible=len(map), n_hidden=0, lr=self.lr, corruption_level=0, gracePeriod=1000, hiddenRatio=self.hr)
             self.ensembleLayer.append(AE.dA(params,bufferSize))
 
         # construct output layer
-        params = AE.dA_params(len(self.v), n_hidden=0, lr=self.lr, corruption_level=0, gracePeriod=0, hiddenRatio=self.hr)
+        params = AE.dA_params(len(self.v), n_hidden=0, lr=self.lr, corruption_level=0, gracePeriod=1000, hiddenRatio=self.hr)
         self.outputLayer = AE.dA(params,bufferSize)
 
 # Copyright (c) 2017 Yisroel Mirsky

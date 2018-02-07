@@ -60,7 +60,7 @@ class GMM:
         x = np.arange(self.rnge[0], self.rnge[1], self.interval)
         P = np.empty((self.G.n_components,self.nbins))
         for c in range(0,self.G.n_components):
-            std = np.sqrt(self.G.covariances_[c][0])*self.bfactor
+            std = np.sqrt(self.G.covariances_[c][0])*self.bfactor*1.1 # inc std of components
             mean = self.G.means_[c]
             P[c,] = norm.cdf(x,scale=std,loc=mean)*self.G.weights_[c]
 
