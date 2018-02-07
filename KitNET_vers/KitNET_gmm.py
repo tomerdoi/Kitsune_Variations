@@ -138,6 +138,7 @@ class KitNET:
             ## OutputLayer
 
 
+
             exeScore=self.outputLayer.execute(S_l1)
 
             return exeScore
