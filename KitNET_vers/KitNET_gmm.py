@@ -9,7 +9,6 @@ import math
 # For more information and citation, please see our NDSS'18 paper: Kitsune: An Ensemble of Autoencoders for Online Network Intrusion Detection
 # For licensing information, see the end of this document
 
-
 class KitNET:
     #n: the number of features in your input dataset (i.e., x \in R^n)
     #m: the maximum size of any autoencoder in the ensemble layer
