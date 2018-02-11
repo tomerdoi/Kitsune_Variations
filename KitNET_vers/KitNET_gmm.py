@@ -91,7 +91,9 @@ class KitNET:
                     S_l1[a] = self.ensembleLayer[a].train(xi)
                 ## OutputLayer
                 self.outputLayer.train(S_l1)
+                return
 
+            ##getting rmse using execute
             ## Ensemble Layer
             S_l1 = np.zeros(len(self.ensembleLayer))
             for a in range(len(self.ensembleLayer)):
@@ -110,7 +112,7 @@ class KitNET:
                     self.gmm.train_batch(self.gmm_batch_buffer)
                     self.gmm_batch_buffer=[]
             ## AD train
-            if ( self.gmm.execute(rmse)>0.3 and  self.gmm.gmm_n>=self.GMMgrace) or self.gmm.gmm_n<self.GMMgrace :
+            if ( self.gmm.execute(rmse)>0.3 and  self.gmm.gmm_n>=self.GMMgrace and self.n_trained<self.FM_grace_period+self.AD_grace_period) or (self.gmm.gmm_n<self.GMMgrace and self.n_trained<self.FM_grace_period+self.AD_grace_period):
                 S_l1 = np.zeros(len(self.ensembleLayer))
                 for a in range(len(self.ensembleLayer)):
                     # make sub instance for autoencoder 'a'
