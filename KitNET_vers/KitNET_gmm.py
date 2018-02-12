@@ -79,7 +79,6 @@ class KitNET:
         else: #train AD and GMM
 
 
-
             ##Initial pre-GMM train
 
             if self.n_trained<self.FM_grace_period+self.PreGMM_ADtraingrace:
