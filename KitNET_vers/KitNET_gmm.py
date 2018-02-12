@@ -39,10 +39,10 @@ class KitNET:
         self.n_executed = 0 # the number of executed instances so far
         self.v = feature_map
         if self.v is None:
-            print("Feature-Mapper: train-mode, Anomaly-Detector: off-mode")
+            print("Feature-Mapper: train-mode, Anomaly-Detector: off-mode, GMM - disabled-mode")
         else:
             self.__createAD__(bufferSize)
-            print("Feature-Mapper: execute-mode, Anomaly-Detector: train-mode")
+            print("Feature-Mapper: execute-mode, Anomaly-Detector: train-mode, GMM - disabled-mode")
         self.FM = CC.corClust(self.n) #incremental feature cluatering for the feature mapping process
         self.ensembleLayer = []
         self.outputLayer = None
@@ -75,53 +75,40 @@ class KitNET:
                 self.v = self.FM.cluster(self.m)
                 self.__createAD__(bufferSize=self.bufferSize)
                 print("The Feature-Mapper found a mapping: "+str(self.n)+" features to "+str(len(self.v))+" autoencoders.")
-                print("Feature-Mapper: execute-mode, Anomaly-Detector: train-mode")
-        else: #train
+                print("Feature-Mapper: execute-mode, Anomaly-Detector: train-mode, GMM - disabled-mode")
+        else: #train AD and GMM
 
 
 
             ##Initial pre-GMM train
 
             if self.n_trained<self.FM_grace_period+self.PreGMM_ADtraingrace:
-                S_l1 = np.zeros(len(self.ensembleLayer))
-                for a in range(len(self.ensembleLayer)):
-                    # make sub instance for autoencoder 'a'
-                    xi = x[self.v[a]]
-                    S_l1[a] = self.ensembleLayer[a].train(xi)
-                ## OutputLayer
-                self.outputLayer.train(S_l1)
+                self.trainEnsemble(x)
                 return
 
             ##getting rmse using execute
             ## Ensemble Layer
-            S_l1 = np.zeros(len(self.ensembleLayer))
-            for a in range(len(self.ensembleLayer)):
-                # make sub instance for autoencoder 'a'
-                xi = x[self.v[a]]
-                S_l1[a] = self.ensembleLayer[a].execute(xi)
-            ## OutputLayer
-            rmse = self.outputLayer.execute(S_l1)
+            rmse=self.executeEnsemble(x, trainMode=0)
 
             ##GMM train
-            if  self.n_trained>self.FM_grace_period+self.PreGMM_ADtraingrace and self.gmm.gmm_n<self.GMMgrace:
+            if  self.n_trained>=self.FM_grace_period+self.PreGMM_ADtraingrace and self.gmm.gmm_n<self.GMMgrace:
 
+                if self.n_trained==self.FM_grace_period+self.PreGMM_ADtraingrace:
+                    print("Feature-Mapper: execute-mode, Anomaly-Detector: train-mode, GMM - train-mode")
                 if rmse!=0 and len(self.gmm_batch_buffer)<self.gmm_batch_size:
                     self.gmm_batch_buffer.append(rmse)
                 elif len(self.gmm_batch_buffer)>=self.gmm_batch_size:
                     self.gmm.train_batch(self.gmm_batch_buffer)
                     self.gmm_batch_buffer=[]
+                if self.gmm.gmm_n==self.GMMgrace and len(self.gmm_batch_buffer)==0:
+                    print ("GMM with "+str( self.gmm.n_components)+ "components finished training.")
+                    print("Feature-Mapper: execute-mode, Anomaly-Detector: train-mode, GMM - disabled-mode")
             ## AD train
-            if ( self.gmm.execute(rmse)>0.3 and  self.gmm.gmm_n>=self.GMMgrace and self.n_trained<self.FM_grace_period+self.AD_grace_period) or (self.gmm.gmm_n<self.GMMgrace and self.n_trained<self.FM_grace_period+self.AD_grace_period):
-                S_l1 = np.zeros(len(self.ensembleLayer))
-                for a in range(len(self.ensembleLayer)):
-                    # make sub instance for autoencoder 'a'
-                    xi = x[self.v[a]]
-                    S_l1[a] = self.ensembleLayer[a].train(xi)
-                ## OutputLayer
-                self.outputLayer.train(S_l1)
+            if  self.n_trained<self.FM_grace_period+self.AD_grace_period:
+               self.trainEnsemble(x)
 
             if self.n_trained == self.AD_grace_period+self.FM_grace_period:
-                print("Feature-Mapper: execute-mode, Anomaly-Detector: exeute-mode")
+                print("Feature-Mapper: execute-mode, Anomaly-Detector: exeute-mode, GMM - execute-mode")
         self.n_trained += 1
 
     #force execute KitNET on x
@@ -129,20 +116,11 @@ class KitNET:
         if self.v is None:
             raise RuntimeError('KitNET Cannot execute x, because a feature mapping has not yet been learned or provided. Try running process(x) instead.')
         else:
-            self.n_executed += 1
-            ## Ensemble Layer
-            S_l1 = np.zeros(len(self.ensembleLayer))
-            for a in range(len(self.ensembleLayer)):
-                # make sub inst
-                xi = x[self.v[a]]
-                S_l1[a] = self.ensembleLayer[a].execute(xi)
-            ## OutputLayer
+
+            rmse=self.executeEnsemble(x,trainMode=1)
 
 
-
-            exeScore=self.outputLayer.execute(S_l1)
-
-            return exeScore
+            return rmse
 
     def __createAD__(self,bufferSize=10):
         # construct ensemble layer
@@ -153,6 +131,48 @@ class KitNET:
         # construct output layer
         params = AE.dA_params(len(self.v), n_hidden=0, lr=self.lr, corruption_level=0, gracePeriod=1000, hiddenRatio=self.hr)
         self.outputLayer = AE.dA(params,bufferSize)
+
+    def trainEnsemble (self,x):
+        S_l1 = np.zeros(len(self.ensembleLayer))
+        for a in range(len(self.ensembleLayer)):
+            # make sub instance for autoencoder 'a'
+            xi = x[self.v[a]]
+            S_l1[a] = self.ensembleLayer[a].train(xi)
+        ## OutputLayer
+        self.outputLayer.train(S_l1)
+        self.n_trained += 1
+
+    def executeEnsemble (self,x,trainMode=0):
+        self.n_executed+=1
+        S_l1 = np.zeros(len(self.ensembleLayer))
+        for a in range(len(self.ensembleLayer)):
+            # make sub inst
+            xi = x[self.v[a]]
+            S_l1[a] = self.ensembleLayer[a].execute(xi)
+
+
+        rmse = self.outputLayer.execute(S_l1)
+        self.n_executed += 1
+
+        if trainMode == 1:
+            cdf=self.gmm.gmm_cdf(rmse)
+            Original_LRs = np.zeros(len(self.ensembleLayer)+1)
+            for a in range(len(self.ensembleLayer)):
+                Original_LRs[a]=(self.ensembleLayer[a]).params.lr
+                ((self.ensembleLayer[a])).params.lr = ((self.ensembleLayer[a])).params.lr * cdf
+
+            Original_LRs[len(Original_LRs)-1]=(self.outputLayer).params.lr
+
+            ((self.outputLayer)).params.lr = ((self.outputLayer)).params.lr * cdf
+
+            self.n_trained += 1
+            self.trainEnsemble(x)
+
+            for a in range(len(self.ensembleLayer)):
+                (self.ensembleLayer[a]).params.lr= Original_LRs[a]
+            ((self.outputLayer)).params.lr = Original_LRs[len(Original_LRs)-1]
+
+        return rmse
 
 # Copyright (c) 2017 Yisroel Mirsky
 #
