@@ -38,7 +38,7 @@ for idx in range(10,11):
                 ADgrace = 1000000 - FMgrace  # the number of instances used to train the anomaly detector (ensemble itself)
 
             # Build KitNET
-            K = KitNET(n=X.shape[1],bufferSize= mb,max_autoencoder_size= maxAE,FM_grace_period= FMgrace,AD_grace_period= ADgrace)
+            K = KitNET(n=X.shape[1],bufferSize= mb,max_autoencoder_size= maxAE,FM_grace_period= FMgrace,AD_grace_period= ADgrace,gmm_batch=100,GMMgrace=500)
             RMSEs = np.zeros(X.shape[0]) # a place to save the scores
 
             print("Running KitNET:")
