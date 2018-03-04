@@ -19,7 +19,7 @@ class KitNET:
     #feature_map: One may optionally provide a feature map instead of learning one. The map must be a list,
     #           where the i-th entry contains a list of the feature indices to be assingned to the i-th autoencoder in the ensemble.
     #           For example, [[2,5,3],[4,0,1],[6,7]]
-    def __init__(self,n,bufferSize=1000,max_autoencoder_size=10,FM_grace_period=None,AD_grace_period=10000,learning_rate=0.1,hidden_ratio=0.75, feature_map = None,gmm_batch=1000, GMMgrace=1000):
+    def __init__(self,n,bufferSize=1,max_autoencoder_size=10,FM_grace_period=None,AD_grace_period=10000,learning_rate=0.1,hidden_ratio=0.75, feature_map = None,gmm_batch=1000, GMMgrace=1000):
         # Parameters:
         self.AD_grace_period = AD_grace_period
         if FM_grace_period is None:
@@ -121,7 +121,7 @@ class KitNET:
 
             return rmse
 
-    def __createAD__(self,bufferSize=10):
+    def __createAD__(self,bufferSize=1):
         # construct ensemble layer
         for map in self.v:
             params = AE.dA_params(n_visible=len(map), n_hidden=0, lr=self.lr, corruption_level=0, gracePeriod=1000, hiddenRatio=self.hr)
@@ -195,3 +195,9 @@ class KitNET:
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+import random
+k=KitNET(bufferSize=1,FM_grace_period=10,AD_grace_period=10,gmm_batch=10,GMMgrace=10,n=115)
+for i in range(100):
+    x=[random.uniform(1,10) for i in range(115)]
+    k.train(x)
