@@ -38,7 +38,7 @@ class dA_params:
 
 
 class dA(OutputLayerModel_I):
-    def __init__(self, params,bufferSize=100):
+    def __init__(self, params,bufferSize=5):
         self.params = params
 
         if self.params.hiddenRatio is not None:
@@ -103,7 +103,7 @@ class dA(OutputLayerModel_I):
 
         self.bufferedInstances.append(tilde_x)
 
-        if self.n < self.bufferSize != 0:
+        if  len(self.bufferedInstances) % self.bufferSize != 0: #if buffer isn't full
             exeScore=self.execute(tilde_x)
 
             return exeScore
@@ -125,7 +125,7 @@ class dA(OutputLayerModel_I):
         self.vbias += self.params.lr * numpy.mean(L_vbias, axis=0)
 
         self.bufferedInstances = []
-        self.n=0
+
 
         #return numpy.sqrt(numpy.mean(L_h2**2)) #the RMSE reconstruction error during training
         exeScore= self.execute(lastSample)
@@ -154,6 +154,6 @@ class dA(OutputLayerModel_I):
 
 par=dA_params(hiddenRatio=0.3)
 d=dA(params=par)
-for i in range(1000):
-    d.train(numpy.array([i+1,i+2,i+3,i+4,i+5]))
+for i in range(10):
+    d.train(numpy.array([i**2,i**7+1,i**6+3,i**3+4,i**4+5]))
 print('finished...')
