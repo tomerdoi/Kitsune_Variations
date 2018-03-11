@@ -87,7 +87,7 @@ class dA(OutputLayerModel_I):
         rmse = self.execute(x)
         if trainMode==0:
             if math.isnan(math.log(rmse))==False:
-            #print('error')
+
                 self.incStat.insert(v=math.log(rmse))
         if trainMode==1:
 
