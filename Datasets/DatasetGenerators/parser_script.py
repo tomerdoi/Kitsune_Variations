@@ -77,6 +77,6 @@ def loadTSV(path):
     return X, srcIPs, Ts
 
 
-X,srcIPs,Ts=loadTSV('D:/datasets/webTraffic.tsv')
-np.savetxt("webTraffic.csv", X, delimiter=",")
+X,srcIPs,Ts=loadTSV('D:/datasets/MT.tsv')
+np.savetxt("D:/datasets/MT.csv", X, delimiter=",")
 

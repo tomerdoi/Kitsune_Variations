@@ -1,6 +1,8 @@
 import math
 import numpy as np
 import json
+import scipy.stats as st
+
 
 class incStat:
     def __init__(self, Lambda, isTypeJitter=False):  # timestamp is creation time
@@ -30,6 +32,11 @@ class incStat:
         self.cur_mean = np.nan  # force recalculation if called
         self.cur_var = np.nan
         self.cur_std = np.nan
+
+    def cdf (self,x):
+        z=float((x-self.mean())/self.std())
+        cdf=st.norm.cdf(z)
+        return cdf
 
     def processDecay(self, timestamp):
         factor=1

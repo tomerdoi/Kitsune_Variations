@@ -5,11 +5,11 @@ import numpy as np
 import pandas as pd
 #from  KitNETGeneric import KitNETGen
 #from KitNET import KitNET
-from KitNET_vers.KitNET_gmm import KitNET
+from KitNET_vers.KitNET_IncStat import KitNET
 
 print('Started Kitnet_Runner...')
 DSpathList=["D:/datasets/KitsuneDatasets/ps2.csv","D:/datasets/KitsuneDatasets/etterArp.csv","D:/datasets/KitsuneDatasets/fuzzing.csv","D:/datasets/KitsuneDatasets/Passive_Sniffing_3-005.csv","D:/datasets/KitsuneDatasets/phiddle_09_08.csv","D:/datasets/KitsuneDatasets/port_scan.csv","D:/datasets/KitsuneDatasets/RTSP.csv","D:/datasets/KitsuneDatasets/RTSP_4-003.csv","D:/datasets/KitsuneDatasets/SSDP_lab_1-002.csv","D:/datasets/KitsuneDatasets/SSL_lab_1-004.csv","D:/datasets/KitsuneDatasets/ssl_renego.csv","D:/datasets/KitsuneDatasets/SYN_lab_1-001.csv","D:/datasets/KitsuneDatasets/pcapParsed_Cameras.csv"]
-
+#DSpathList=["D:/datasets/KitsuneDatasets/ps2.csv","D:/datasets/KitsuneDatasets/ssl_renego.csv"]
 
 #miniBatches=[1000,1,5000,10000,15000,20000]
 miniBatches=[1]
@@ -20,7 +20,7 @@ for idx in range(10,11):
         for DSpath in DSpathList:
 
             maxAE = idx  # maximum size for any autoencoder in the ensemble layer
-            fileName = DSpath.replace('.csv','_RMSE_Scores_GMMBased_maxClusterSize_' + str(maxAE) + '_MiniBatchSize_' + str(mb) + '_.csv')
+            fileName = DSpath.replace('.csv','_RMSE_Scores_IncStat_maxClusterSize_' + str(maxAE) + '_MiniBatchSize_' + str(mb) + '_.csv')
             if os.path.isfile(fileName) == True:
                 continue
 
@@ -51,7 +51,7 @@ for idx in range(10,11):
                 if i % 1000 == 0:
                     print(i)
                 RMSEs[i] = K.process(X[i,]) #will train during the grace periods, then execute on all the rest.
-            with open (DSpath.replace('.csv','_RMSE_Scores_GMMBased_maxClusterSize_' + str(maxAE) + '_MiniBatchSize_' + str(mb) + '_.csv'),'w') as outRMSE:
+            with open (DSpath.replace('.csv','_RMSE_Scores_IncStat_maxClusterSize_' + str(maxAE) + '_MiniBatchSize_' + str(mb) + '_.csv'),'w') as outRMSE:
                 for rmse in RMSEs:
                     outRMSE.write(str(rmse)+'\n')
             stop = time.time()

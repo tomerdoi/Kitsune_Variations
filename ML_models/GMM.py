@@ -6,6 +6,7 @@ import numpy as np
 class GMM:
     def __init__(self,n_components,rnge=(-30,5),interval=0.01,minBatch = 20000,maxBatch = 500000,bfactor=10):
         self.gmm_n = 0
+        self.n_components=n_components
         self.minBatch = minBatch
         self.maxBatch = maxBatch
         self.gmm_buffer = np.empty((self.maxBatch,1),dtype=float)
