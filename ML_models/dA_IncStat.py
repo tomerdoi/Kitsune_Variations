@@ -93,7 +93,7 @@ class dA(OutputLayerModel_I):
 
             if rmse>0:
                 oldSigma=self.incStat.cur_std
-
+                oldLR=self.params.lr
                 self.incStat.cur_std=self.incStat.cur_std*1.5
                 self.params.lr*=(1-self.incStat.cdf(math.log(rmse)))
                 self.incStat.cur_std= oldSigma
@@ -126,6 +126,8 @@ class dA(OutputLayerModel_I):
         self.hbias += self.params.lr * numpy.mean(L_hbias, axis=0)
         self.vbias += self.params.lr * numpy.mean(L_vbias, axis=0)
 
+        if trainMode==1 and rmse>0:
+            self.params.lr=oldLR
 
         return numpy.sqrt(numpy.mean(L_h2**2)) #the RMSE reconstruction error during training
 
