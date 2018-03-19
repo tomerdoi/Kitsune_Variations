@@ -61,7 +61,7 @@ class KitNET:
     def process(self,x):
         if self.n_trained > self.FM_grace_period + self.AD_grace_period: #If both the FM and AD are in execute-mode
 
-            #print ('Execute all model')
+            print ('Execute all model')
 
 
             return self.execute(x)
@@ -72,16 +72,16 @@ class KitNET:
     #force train KitNET on x
     #returns the anomaly score of x during training (do not use for alerting)
     def train(self,x):
-        #print ('n_trained is: '+str(self.n_trained))
+        print ('n_trained is: '+str(self.n_trained))
         if self.n_trained < self.FM_grace_period and self.v is None: #If the FM is in train-mode, and the user has not supplied a feature mapping
             #update the incremetnal correlation matrix
             self.FM.update(x)
 
-            #print('FM updaing')
+            print('FM updaing')
 
             if self.n_trained == self.FM_grace_period-1: #If the feature mapping should be instantiated
 
-                #print('FM Creating...................')
+                print('FM Creating...................')
 
                 self.v = self.FM.cluster(self.m)
                 self.__createAD__(bufferSize=self.bufferSize)
@@ -95,7 +95,7 @@ class KitNET:
             if self.n_trained<self.FM_grace_period+self.PreGMM_ADtraingrace:
                 self.trainEnsemble(x)
 
-                #print('Initial AD training')
+                print('Initial AD training')
 
                 return
 
@@ -113,14 +113,14 @@ class KitNET:
                 if rmse!=0 and len(self.gmm_batch_buffer)<self.gmm_batch_size:
                     self.gmm_batch_buffer.append(rmse)
 
-                    #print('GMM buffering..........')
+                    print('GMM buffering..........')
 
 
-                elif len(self.gmm_batch_buffer)>=self.gmm_batch_size:
+                if len(self.gmm_batch_buffer)>=self.gmm_batch_size:
                     self.gmm.train_batch(self.gmm_batch_buffer)
                     self.gmm_batch_buffer=[]
 
-                    #print('GMM Batch-Training..........')
+                    print('GMM Batch-Training..........')
 
 
                 if self.gmm.gmm_n==self.GMMgrace and len(self.gmm_batch_buffer)==0:
@@ -131,7 +131,7 @@ class KitNET:
             if  self.n_trained<self.FM_grace_period+self.AD_grace_period:
                self.trainEnsemble(x)
                self.n_trained-=1
-               #print('AD Training..........')
+               print('AD Training..........')
 
             if self.n_trained == self.AD_grace_period+self.FM_grace_period:
                 print("Feature-Mapper: execute-mode, Anomaly-Detector: exeute-mode, GMM - execute-mode")
@@ -224,12 +224,12 @@ class KitNET:
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
+#
 # import random
-# k=KitNET(bufferSize=1,FM_grace_period=3,AD_grace_period=50,gmm_batch=7,GMMgrace=14,n=115)
+# k=KitNET(bufferSize=1,FM_grace_period=3,AD_grace_period=50,gmm_batch=7,GMMgrace=7,n=115)
 # RMSEs=np.zeros(80)
 # for i in range(80):
 #     x=np.array([random.uniform(0,1) for i in range(115)])
 #     RMSEs[i]=k.process(x)
-
+#
 # print('finished...')
