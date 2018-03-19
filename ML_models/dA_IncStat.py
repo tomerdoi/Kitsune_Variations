@@ -94,7 +94,7 @@ class dA(OutputLayerModel_I):
             if rmse>0:
                 oldSigma=self.incStat.cur_std
                 oldLR=self.params.lr
-                self.incStat.cur_std=self.incStat.cur_std*1.5
+                self.incStat.cur_std=self.incStat.cur_std*1
                 self.params.lr*=(1-self.incStat.cdf(math.log(rmse)))
                 self.incStat.cur_std= oldSigma
 

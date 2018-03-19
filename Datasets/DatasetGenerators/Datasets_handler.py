@@ -22,5 +22,5 @@ def createDatasetWithLabels (dsPath, labelsPath):
                     i+=1
 
 #createDatasetWithLabels('D:/datasets/KitsuneDatasets/Weka_experiments/etterArp.csv','D:/datasets/KitsuneDatasets/Weka_experiments/ip_ARP_isBad.csv')
-ns=ns2.netStat()
-print(ns.getNetStatHeaders())
+#ns=ns2.netStat()
+#print(ns.getNetStatHeaders())
