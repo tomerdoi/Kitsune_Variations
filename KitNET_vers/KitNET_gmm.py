@@ -61,7 +61,7 @@ class KitNET:
     def process(self,x):
         if self.n_trained > self.FM_grace_period + self.AD_grace_period: #If both the FM and AD are in execute-mode
 
-            print ('Execute all model')
+            #print ('Execute all model')
 
 
             return self.execute(x)
