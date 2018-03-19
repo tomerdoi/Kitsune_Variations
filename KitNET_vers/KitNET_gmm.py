@@ -72,16 +72,16 @@ class KitNET:
     #force train KitNET on x
     #returns the anomaly score of x during training (do not use for alerting)
     def train(self,x):
-        print ('n_trained is: '+str(self.n_trained))
+        #print ('n_trained is: '+str(self.n_trained))
         if self.n_trained < self.FM_grace_period and self.v is None: #If the FM is in train-mode, and the user has not supplied a feature mapping
             #update the incremetnal correlation matrix
             self.FM.update(x)
 
-            print('FM updaing')
+            #print('FM updaing')
 
             if self.n_trained == self.FM_grace_period-1: #If the feature mapping should be instantiated
 
-                print('FM Creating...................')
+                #print('FM Creating...................')
 
                 self.v = self.FM.cluster(self.m)
                 self.__createAD__(bufferSize=self.bufferSize)
@@ -95,7 +95,7 @@ class KitNET:
             if self.n_trained<self.FM_grace_period+self.PreGMM_ADtraingrace:
                 self.trainEnsemble(x)
 
-                print('Initial AD training')
+                #print('Initial AD training')
 
                 return
 
@@ -113,14 +113,14 @@ class KitNET:
                 if rmse!=0 and len(self.gmm_batch_buffer)<self.gmm_batch_size:
                     self.gmm_batch_buffer.append(rmse)
 
-                    print('GMM buffering..........')
+                    #print('GMM buffering..........')
 
 
                 if len(self.gmm_batch_buffer)>=self.gmm_batch_size:
                     self.gmm.train_batch(self.gmm_batch_buffer)
                     self.gmm_batch_buffer=[]
 
-                    print('GMM Batch-Training..........')
+                    #print('GMM Batch-Training..........')
 
 
                 if self.gmm.gmm_n==self.GMMgrace and len(self.gmm_batch_buffer)==0:
@@ -131,7 +131,7 @@ class KitNET:
             if  self.n_trained<self.FM_grace_period+self.AD_grace_period:
                self.trainEnsemble(x)
                self.n_trained-=1
-               print('AD Training..........')
+               #print('AD Training..........')
 
             if self.n_trained == self.AD_grace_period+self.FM_grace_period:
                 print("Feature-Mapper: execute-mode, Anomaly-Detector: exeute-mode, GMM - execute-mode")
