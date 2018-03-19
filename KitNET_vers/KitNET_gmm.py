@@ -225,11 +225,11 @@ class KitNET:
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-# import random
-# k=KitNET(bufferSize=1,FM_grace_period=3,AD_grace_period=50,gmm_batch=7,GMMgrace=7,n=115)
-# RMSEs=np.zeros(80)
-# for i in range(80):
-#     x=np.array([random.uniform(0,1) for i in range(115)])
-#     RMSEs[i]=k.process(x)
-#
-# print('finished...')
+import random
+k=KitNET(bufferSize=1,FM_grace_period=3,AD_grace_period=50,gmm_batch=7,GMMgrace=7,n=115)
+RMSEs=np.zeros(80)
+for i in range(80):
+    x=np.array([random.uniform(0,1) for i in range(115)])
+    RMSEs[i]=k.process(x)
+
+print('finished...')
