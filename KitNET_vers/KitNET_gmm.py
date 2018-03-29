@@ -1,7 +1,7 @@
 import numpy as np
 import ML_models.GMM as gmm
 from Clusterers import corClust as CC
-from ML_models import dA as AE
+from ML_models import dA_GMM as AE
 import math
 
 # This class represents a KitNET machine learner.
@@ -60,6 +60,10 @@ class KitNET:
     #Note: KitNET automatically performs 0-1 normalization on all attributes.
     def process(self,x):
         if self.n_trained > self.FM_grace_period + self.AD_grace_period: #If both the FM and AD are in execute-mode
+
+            #print ('Execute all model')
+
+
             return self.execute(x)
         else:
             self.train(x)
@@ -68,10 +72,17 @@ class KitNET:
     #force train KitNET on x
     #returns the anomaly score of x during training (do not use for alerting)
     def train(self,x):
-        if self.n_trained <= self.FM_grace_period and self.v is None: #If the FM is in train-mode, and the user has not supplied a feature mapping
+        #print ('n_trained is: '+str(self.n_trained))
+        if self.n_trained < self.FM_grace_period and self.v is None: #If the FM is in train-mode, and the user has not supplied a feature mapping
             #update the incremetnal correlation matrix
             self.FM.update(x)
-            if self.n_trained == self.FM_grace_period: #If the feature mapping should be instantiated
+
+            #print('FM updaing')
+
+            if self.n_trained == self.FM_grace_period-1: #If the feature mapping should be instantiated
+
+                #print('FM Creating...................')
+
                 self.v = self.FM.cluster(self.m)
                 self.__createAD__(bufferSize=self.bufferSize)
                 print("The Feature-Mapper found a mapping: "+str(self.n)+" features to "+str(len(self.v))+" autoencoders.")
@@ -83,6 +94,9 @@ class KitNET:
 
             if self.n_trained<self.FM_grace_period+self.PreGMM_ADtraingrace:
                 self.trainEnsemble(x)
+
+                #print('Initial AD training')
+
                 return
 
             ##getting rmse using execute
@@ -92,23 +106,36 @@ class KitNET:
             ##GMM train
             if  self.n_trained>=self.FM_grace_period+self.PreGMM_ADtraingrace and self.gmm.gmm_n<self.GMMgrace:
 
+
+
                 if self.n_trained==self.FM_grace_period+self.PreGMM_ADtraingrace:
                     print("Feature-Mapper: execute-mode, Anomaly-Detector: train-mode, GMM - train-mode")
                 if rmse!=0 and len(self.gmm_batch_buffer)<self.gmm_batch_size:
                     self.gmm_batch_buffer.append(rmse)
-                elif len(self.gmm_batch_buffer)>=self.gmm_batch_size:
+
+                    #print('GMM buffering..........')
+
+
+                if len(self.gmm_batch_buffer)>=self.gmm_batch_size:
                     self.gmm.train_batch(self.gmm_batch_buffer)
                     self.gmm_batch_buffer=[]
+
+                    #print('GMM Batch-Training..........')
+
+
                 if self.gmm.gmm_n==self.GMMgrace and len(self.gmm_batch_buffer)==0:
                     print ("GMM with "+str( self.gmm.n_components)+ "components finished training.")
                     print("Feature-Mapper: execute-mode, Anomaly-Detector: train-mode, GMM - disabled-mode")
+
             ## AD train
             if  self.n_trained<self.FM_grace_period+self.AD_grace_period:
                self.trainEnsemble(x)
+               self.n_trained-=1
+               #print('AD Training..........')
 
             if self.n_trained == self.AD_grace_period+self.FM_grace_period:
                 print("Feature-Mapper: execute-mode, Anomaly-Detector: exeute-mode, GMM - execute-mode")
-        self.n_trained += 1
+        self.n_trained+=1
 
     #force execute KitNET on x
     def execute(self,x):
@@ -117,6 +144,7 @@ class KitNET:
         else:
 
             rmse=self.executeEnsemble(x,trainMode=1)
+
 
 
             return rmse
@@ -143,6 +171,7 @@ class KitNET:
 
     def executeEnsemble (self,x,trainMode=0):
         self.n_executed+=1
+
         S_l1 = np.zeros(len(self.ensembleLayer))
         for a in range(len(self.ensembleLayer)):
             # make sub inst
@@ -195,9 +224,12 @@ class KitNET:
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
+#
 import random
-k=KitNET(bufferSize=1,FM_grace_period=10,AD_grace_period=10,gmm_batch=10,GMMgrace=10,n=115)
-for i in range(100):
-    x=[random.uniform(1,10) for i in range(115)]
-    k.train(x)
+k=KitNET(bufferSize=1,FM_grace_period=3,AD_grace_period=50,gmm_batch=7,GMMgrace=7,n=115)
+RMSEs=np.zeros(80)
+for i in range(80):
+    x=np.array([random.uniform(0,1) for i in range(115)])
+    RMSEs[i]=k.process(x)
+
+print('finished...')

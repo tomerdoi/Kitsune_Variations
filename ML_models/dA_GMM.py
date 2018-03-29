@@ -25,8 +25,7 @@
 
 from Facilities.utils import *
 from ML_models.OutputLayerModel_I import OutputLayerModel_I
-from Datasets.DatasetGenerators.AfterImage import incStat
-import math
+
 
 class dA_params:
     def __init__(self,n_visible = 5, n_hidden = 3, lr=0.001, corruption_level=0.0, gracePeriod = 10000, hiddenRatio=None):
@@ -36,7 +35,6 @@ class dA_params:
         self.corruption_level = corruption_level
         self.gracePeriod = gracePeriod
         self.hiddenRatio = hiddenRatio
-
 
 
 class dA(OutputLayerModel_I):
@@ -63,8 +61,6 @@ class dA(OutputLayerModel_I):
         self.vbias = numpy.zeros(self.params.n_visible)  # initialize v bias 0
         self.W_prime = self.W.T
 
-        self.incStat = incStat(Lambda=0.1)
-
 
 
 
@@ -83,22 +79,11 @@ class dA(OutputLayerModel_I):
     def get_reconstructed_input(self, hidden):
         return sigmoid(numpy.dot(hidden, self.W_prime) + self.vbias)
 
-    def train(self, x, trainMode=0):
-        rmse = self.execute(x)
-        if trainMode==0:
-            if math.isnan(math.log(rmse))==False:
-
-                self.incStat.insert(v=math.log(rmse))
-        if trainMode==1:
-
-            if rmse>0:
-                oldSigma=self.incStat.cur_std
-                oldLR=self.params.lr
-                self.incStat.cur_std=self.incStat.cur_std*1
-                self.params.lr*=(1-self.incStat.cdf(math.log(rmse)))
-                self.incStat.cur_std= oldSigma
-
+    def train(self, x):
         self.n = self.n + 1
+
+
+
         # update norms
         self.norm_max[x > self.norm_max] = x[x > self.norm_max]
         self.norm_min[x < self.norm_min] = x[x < self.norm_min]
@@ -126,8 +111,6 @@ class dA(OutputLayerModel_I):
         self.hbias += self.params.lr * numpy.mean(L_hbias, axis=0)
         self.vbias += self.params.lr * numpy.mean(L_vbias, axis=0)
 
-        if trainMode==1 and rmse>0:
-            self.params.lr=oldLR
 
         return numpy.sqrt(numpy.mean(L_h2**2)) #the RMSE reconstruction error during training
 
@@ -140,7 +123,7 @@ class dA(OutputLayerModel_I):
 
     def execute(self, x): #returns MSE of the reconstruction of x
         #if self.n < self.params.gracePeriod:
-         #   return 0.0
+        #    return 0.0
         #else:
         # 0-1 normalize
         x = (x - self.norm_min) / (self.norm_max - self.norm_min + 0.0000000000000001)
