@@ -16,6 +16,7 @@ class PacketSeqMC ():
         self.currIdx=0
         self.H2HMAT = np.zeros((maxHosts, maxHosts))
 
+
     def processPacket (self,IPtype, srcMAC, dstMAC,srcIP, srcproto, dstIP, dstproto, framelen,timestamp):
         k1=srcMAC+'_'+dstMAC
         k2=srcIP+'_'+dstIP
