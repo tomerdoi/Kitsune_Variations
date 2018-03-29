@@ -98,6 +98,7 @@ class dA(OutputLayerModel_I):
                 self.params.lr*=(1-self.incStat.cdf(math.log(rmse)))
                 self.incStat.cur_std= oldSigma
 
+
         self.n = self.n + 1
         # update norms
         self.norm_max[x > self.norm_max] = x[x > self.norm_max]
