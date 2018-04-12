@@ -20,6 +20,7 @@ class UpiFE:
         self.numOfTimeInterval=10
         self.numOfSizeInterval=10
 
+#HMM features: given the last 1-100 TS/size, what is the probability to the current TS/Size
     def updateStats (self,IPtype, srcMAC, dstMAC,srcIP, srcproto, dstIP, dstproto, framelen,timestamp):
         print('packet FE...')
 
