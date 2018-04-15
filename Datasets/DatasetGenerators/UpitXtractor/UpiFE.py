@@ -11,7 +11,7 @@ from ML_models.HMM import HMM
 class UpiFE:
 
     def __init__ (self):
-        print('UpiFE was initaited...')
+        print('UpiFE was initiated...')
 
         self.connectionsTimeInverval={}
         self.connectionsSizeInverval = {}
@@ -20,44 +20,98 @@ class UpiFE:
         self.numOfTimeInterval=10
         self.numOfSizeInterval=10
 
-#HMM features: given the last 1-100 TS/size, what is the probability to the current TS/Size
-    def updateStats (self,IPtype, srcMAC, dstMAC,srcIP, srcproto, dstIP, dstproto, framelen,timestamp):
+        self.connectionsSizeMu={}
+        self.connectionsSizeStd={}
+        self.connectionsSizeCount={}
+
+        self.connectionsTSMu={}
+        self.connectionsTSStd={}
+        self.connectionsTSCount = {}
+
+        self.TSintervalVec=[]
+        self.sizeintervalVec=[]
+
+
+    def getStatsMeasuresPerConnection (self, srcMAC, dstMAC,srcIP, srcproto, dstIP, dstproto, framelen,timestamp):
+
+        keys=[srcMAC+'_'+srcIP,srcIP,srcIP+'_'+dstIP,srcIP + '_'+srcproto+'_' + dstIP+'_'+dstproto]
+
+        for k in keys:
+            if k not in self.connectionsSizeMu:
+
+                self.connectionsSizeCount[k]=0
+                self.connectionsTSCount[k] = 0
+
+                self.connectionsSizeMu[k]=0
+                self.connectionsSizeStd[k] = 0
+
+                self.connectionsTSMu[k] = 0
+                self.connectionsTSStd[k] = 0
+
+        self.connectionsSizeCount[k] += 1
+        self.connectionsTSCount[k] +=1
+
+        difSize=framelen-self.connectionsSizeMu[k]
+        difTS=timestamp-self.connectionsTSMu[k]
+
+        size_n= self.connectionsSizeCount[k]
+        TS_n=self.connectionsTSCount[k]
+
+        self.connectionsSizeMu[k]+=difSize/size_n
+        self.connectionsTSMu[k] += difTS/TS_n
+
+        size_mu=  self.connectionsSizeMu[k]
+        TS_mu= self.connectionsTSMu[k]
+
+        self.connectionsSizeStd[k]+=difSize*size_mu
+        self.connectionsTSStd[k] += difTS*TS_mu
+
+        #mu and std were calculated foreach connection
+
+
+
+
+    #HMM features: given the last 1-100 TS/size, what is the probability to the current TS/Size
+    def updateHMMs (self,IPtype, srcMAC, dstMAC,srcIP, srcproto, dstIP, dstproto, framelen,timestamp):
         print('packet FE...')
 
+        keys = [srcMAC + '_' + srcIP, srcIP, srcIP + '_' + dstIP, srcIP + '_' + srcproto + '_' + dstIP + '_' + dstproto]
+        for k in keys:
+
+            if k not in self.connectionsTimeInverval: #srcIP-srcMAC
+                self.connectionsTimeInverval[k]=HMM(self.numOfTimeInterval)
+                self.connectionsSizeInverval[k] = HMM(self.numOfSizeInterval)
 
 
-        if srcMAC+'_'+srcIP not in self.connectionsTimeInverval: #srcIP-srcMAC
-            self.connectionsTimeInverval[srcMAC+'_'+srcIP]=HMM(self.numOfTimeInterval)
-            self.connectionsSizeInverval[srcMAC+'_'+srcIP] = HMM(self.numOfSizeInterval)
-            self.connectionsLastTS[srcMAC+'_'+srcIP]=timestamp
-            self.connectionsLastSize[srcMAC+'_'+srcIP]=framelen
+            stateIdxSizeCurr,stateIdxSizeLast=self.getStateIdx(framelen,self.connectionsLastSize[k],self.sizeintervalVec)
+            stateIdxTSCurr,stateIdxTSLast = self.getStateIdx(timestamp, self.connectionsLastTS[k], self.TSintervalVec)
 
-        if srcIP not in self.connectionsTimeInverval:  # srcIP
-            self.connectionsSizeInverval[srcIP] = HMM(self.numOfTimeInterval)
-            self.connectionsSizeInverval[srcIP] = HMM(self.numOfSizeInterval)
-            self.connectionsLastTS[srcIP] = timestamp
-            self.connectionsLastSize[srcIP] = framelen
+            self.connectionsTimeInverval[k].getNewState(stateIdxTSCurr+1)
+            self.connectionsSizeInverval[k].getNewState(stateIdxSizeCurr+1)
 
-        if srcIP+'_'+dstIP not in  self.connectionsTimeInverval: #channel
-            self.connectionsSizeInverval[srcIP+'_'+dstIP]=HMM(self.numOfTimeInterval)
-            self.connectionsSizeInverval[srcIP + '_' + dstIP] = HMM(self.numOfSizeInterval)
-            self.connectionsLastTS[srcIP + '_' + dstIP] = timestamp
-            self.connectionsLastSize[srcIP + '_' + dstIP] = framelen
+            self.connectionsLastTS[k] = timestamp
+            self.connectionsLastSize[k] = framelen
 
-        if srcIP + '_'+srcproto+'_' + dstIP+'_'+dstproto not in self.connectionsTimeInverval: #socket
-            self.connectionsSizeInverval[srcIP + '_'+srcproto+'_' + dstIP+'_'+dstproto] = HMM(self.numOfTimeInterval)
-            self.connectionsSizeInverval[srcIP + '_'+srcproto+'_' + dstIP+'_'+dstproto] = HMM(self.numOfSizeInterval)
-            self.connectionsLastTS[srcIP + '_'+srcproto+'_' + dstIP+'_'+dstproto] = timestamp
-            self.connectionsLastSize[srcIP + '_'+srcproto+'_' + dstIP+'_'+dstproto] = framelen
 
+    def getStateIdx (self,curr, last, refVector):
+
+        idxCurr=0
+        while (curr>refVector[idxCurr]):
+            idxCurr+=1
+
+        idxLast = 0
+        while (last > refVector[idxLast]):
+            idxLast += 1
+
+        return idxCurr, idxLast
 
 
     def getTimeIntervalVector (self, mu,sig):
-        time_interval_vector=[mu+float(i/3)*sig for i in range(15)]
+        time_interval_vector=[mu+float(i/2)*sig for i in range(-6,7)]
         return time_interval_vector
 
     def getSizeIntervalVector (self, mu,sig):
-        size_interval_vector=[mu+float(i/3)*sig for i in range(15)]
+        size_interval_vector=[mu+float(i/2)*sig for i in range(-6,7)]
         return size_interval_vector
 
 
