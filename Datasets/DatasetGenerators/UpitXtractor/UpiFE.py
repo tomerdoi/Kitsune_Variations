@@ -81,10 +81,11 @@ class UpiFE:
             if k not in self.connectionsTimeInverval: #srcIP-srcMAC
                 self.connectionsTimeInverval[k]=HMM(self.numOfTimeInterval)
                 self.connectionsSizeInverval[k] = HMM(self.numOfSizeInterval)
-
+                self.connectionsLastTS[k] = 0 # start init
+                self.connectionsLastSize[k] = 0 # start init
 
             stateIdxSizeCurr,stateIdxSizeLast=self.getStateIdx(framelen,self.connectionsLastSize[k],self.sizeintervalVec)
-            stateIdxTSCurr,stateIdxTSLast = self.getStateIdx(timestamp, self.connectionsLastTS[k], self.TSintervalVec)
+            stateIdxTSCurr,stateIdxTSLast = self.getStateIdx(timestamp-self.connectionsLastTS[k], self.connectionsLastTS[k], self.TSintervalVec)
 
             self.connectionsTimeInverval[k].getNewState(stateIdxTSCurr+1)
             self.connectionsSizeInverval[k].getNewState(stateIdxSizeCurr+1)
