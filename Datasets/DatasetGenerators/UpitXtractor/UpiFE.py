@@ -32,7 +32,7 @@ class UpiFE:
         self.sizeintervalVec=[]
 
 
-    def getStatsMeasuresPerConnection (self, srcMAC, dstMAC,srcIP, srcproto, dstIP, dstproto, framelen,timestamp):
+    def TrainStatsMeasuresPerConnection (self, srcMAC, dstMAC,srcIP, srcproto, dstIP, dstproto, framelen,timestamp):
 
         keys=[srcMAC+'_'+srcIP,srcIP,srcIP+'_'+dstIP,srcIP + '_'+srcproto+'_' + dstIP+'_'+dstproto]
 
@@ -72,7 +72,7 @@ class UpiFE:
 
 
     #HMM features: given the last 1-100 TS/size, what is the probability to the current TS/Size
-    def updateHMMs (self,IPtype, srcMAC, dstMAC,srcIP, srcproto, dstIP, dstproto, framelen,timestamp):
+    def trainHMMs (self,IPtype, srcMAC, dstMAC,srcIP, srcproto, dstIP, dstproto, framelen,timestamp):
         print('packet FE...')
 
         keys = [srcMAC + '_' + srcIP, srcIP, srcIP + '_' + dstIP, srcIP + '_' + srcproto + '_' + dstIP + '_' + dstproto]
@@ -83,6 +83,20 @@ class UpiFE:
                 self.connectionsSizeInverval[k] = HMM(self.numOfSizeInterval)
                 self.connectionsLastTS[k] = 0 # start init
                 self.connectionsLastSize[k] = 0 # start init
+
+                muTS= self.connectionsTSMu[k]
+                stdTS= self.connectionsTSStd[k]
+
+
+                TSstate,TSstate=self.getStateIdx(timestamp,timestamp,self.getTimeIntervalVector(muTS,stdTS))
+                self.connectionsTimeInverval[k].setState(TSstate)
+
+                muSize = self.connectionsSizeMu[k]
+                stdSize = self.connectionsSizeStd[k]
+
+                sizestate, sizestate = self.getStateIdx(framelen, framelen, self.getSizeIntervalVector(muSize, stdSize))
+                self.connectionsSizeInverval[k].setState(sizestate)
+
 
             stateIdxSizeCurr,stateIdxSizeLast=self.getStateIdx(framelen,self.connectionsLastSize[k],self.sizeintervalVec)
             stateIdxTSCurr,stateIdxTSLast = self.getStateIdx(timestamp-self.connectionsLastTS[k], self.connectionsLastTS[k], self.TSintervalVec)
@@ -114,5 +128,13 @@ class UpiFE:
     def getSizeIntervalVector (self, mu,sig):
         size_interval_vector=[mu+float(i/2)*sig for i in range(-6,7)]
         return size_interval_vector
+
+
+
+#m2=np.array([[0.1, 0.6, 0.3],[0.4,0.35,0.25],[0.3,0.3,0.4]])
+#m2=np.matmul(m2,m2)
+
+
+
 
 

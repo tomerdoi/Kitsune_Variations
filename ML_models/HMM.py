@@ -10,6 +10,9 @@ class HMM (object):
         self.m_transitionMatrix[self.currState-1][state-1]+=1
         self.currState=state
 
+    def setState (self,state):
+        self.currState=state
+
 h=HMM(5)
 numberOfIters=random.randint(1000000,1000000)
 for i in range(numberOfIters):
@@ -22,5 +25,4 @@ for r in range(len(h.m_transitionMatrix)):
         h.m_transitionMatrix[r][j]/=float(s)
 
 print(h.m_transitionMatrix)
-
 
