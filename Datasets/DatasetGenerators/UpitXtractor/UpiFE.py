@@ -130,7 +130,6 @@ class UpiFE:
         return size_interval_vector
 
 
-
 #m2=np.array([[0.1, 0.6, 0.3],[0.4,0.35,0.25],[0.3,0.3,0.4]])
 #m2=np.matmul(m2,m2)
 
