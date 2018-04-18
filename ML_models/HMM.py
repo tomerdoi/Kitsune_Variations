@@ -1,5 +1,7 @@
 import numpy as np
 import random
+import copy
+
 class HMM (object):
     def __init__ (self,NumOfStates):
         self.numOfStates=NumOfStates
@@ -13,6 +15,12 @@ class HMM (object):
     def setState (self,state):
         self.currState=state
 
+    def multMatrices (m1, numberOfMults):
+        ans=copy.copy(m1)
+        for i in range (numberOfMults):
+            ans=np.matmul(m1,ans)
+        return ans
+
 h=HMM(5)
 numberOfIters=random.randint(1000000,1000000)
 for i in range(numberOfIters):
@@ -23,6 +31,7 @@ for r in range(len(h.m_transitionMatrix)):
     s=sum(h.m_transitionMatrix[r])
     for j in range(len(h.m_transitionMatrix[r])):
         h.m_transitionMatrix[r][j]/=float(s)
+
 
 print(h.m_transitionMatrix)
 

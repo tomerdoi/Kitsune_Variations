@@ -111,11 +111,11 @@ class UpiFE:
     def getStateIdx (self,curr, last, refVector):
 
         idxCurr=0
-        while (curr>refVector[idxCurr]):
+        while (idxCurr<len(refVector) and curr>refVector[idxCurr]):
             idxCurr+=1
 
         idxLast = 0
-        while (last > refVector[idxLast]):
+        while (idxCurr<len(refVector) and last > refVector[idxLast]):
             idxLast += 1
 
         return idxCurr, idxLast
