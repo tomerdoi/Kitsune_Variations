@@ -48,7 +48,7 @@ class KitNET:
         self.outputLayer = None
         self.bufferSize=bufferSize
 
-        self.gmm=gmm.GMM(n_components=7, minBatch=gmm_batch)
+        self.gmm=gmm.GMM(n_components=15, minBatch=gmm_batch)
         self.gmm_batch_buffer=[]
         self.gmm_batch_size=gmm_batch
         self.GMMgrace=GMMgrace
@@ -226,7 +226,7 @@ class KitNET:
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 import random
-k=KitNET(bufferSize=1,FM_grace_period=3,AD_grace_period=50,gmm_batch=7,GMMgrace=7,n=115)
+k=KitNET(bufferSize=1,FM_grace_period=3,AD_grace_period=50,gmm_batch=100,GMMgrace=10000,n=115)
 RMSEs=np.zeros(80)
 for i in range(80):
     x=np.array([random.uniform(0,1) for i in range(115)])
