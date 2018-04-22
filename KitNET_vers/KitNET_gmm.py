@@ -19,7 +19,7 @@ class KitNET:
     #feature_map: One may optionally provide a feature map instead of learning one. The map must be a list,
     #           where the i-th entry contains a list of the feature indices to be assingned to the i-th autoencoder in the ensemble.
     #           For example, [[2,5,3],[4,0,1],[6,7]]
-    def __init__(self,n,bufferSize=1,max_autoencoder_size=10,FM_grace_period=None,AD_grace_period=10000,learning_rate=0.1,hidden_ratio=0.75, feature_map = None,gmm_batch=1000, GMMgrace=1000):
+    def __init__(self,n,bufferSize=1,max_autoencoder_size=10,FM_grace_period=None,AD_grace_period=10000,learning_rate=0.1,hidden_ratio=0.75, feature_map = None,gmm_batch=100, GMMgrace=10000):
         # Parameters:
         self.AD_grace_period = AD_grace_period
         if FM_grace_period is None:
@@ -225,11 +225,11 @@ class KitNET:
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-import random
-k=KitNET(bufferSize=1,FM_grace_period=3,AD_grace_period=50,gmm_batch=100,GMMgrace=10000,n=115)
-RMSEs=np.zeros(80)
-for i in range(80):
-    x=np.array([random.uniform(0,1) for i in range(115)])
-    RMSEs[i]=k.process(x)
-
-print('finished...')
+# import random
+# k=KitNET(bufferSize=1,FM_grace_period=3,AD_grace_period=50,gmm_batch=100,GMMgrace=10000,n=115)
+# RMSEs=np.zeros(80)
+# for i in range(80):
+#     x=np.array([random.uniform(0,1) for i in range(115)])
+#     RMSEs[i]=k.process(x)
+#
+# print('finished...')
