@@ -48,7 +48,7 @@ class KitNET:
         self.outputLayer = None
         self.bufferSize=bufferSize
 
-        self.gmm=gmm.GMM(n_components=15, minBatch=gmm_batch)
+        self.gmm=gmm.GMM(n_components=60, minBatch=gmm_batch)
         self.gmm_batch_buffer=[]
         self.gmm_batch_size=gmm_batch
         self.GMMgrace=GMMgrace
@@ -187,11 +187,11 @@ class KitNET:
             Original_LRs = np.zeros(len(self.ensembleLayer)+1)
             for a in range(len(self.ensembleLayer)):
                 Original_LRs[a]=(self.ensembleLayer[a]).params.lr
-                ((self.ensembleLayer[a])).params.lr = ((self.ensembleLayer[a])).params.lr * cdf
+                ((self.ensembleLayer[a])).params.lr = ((self.ensembleLayer[a])).params.lr * (1-cdf)
 
             Original_LRs[len(Original_LRs)-1]=(self.outputLayer).params.lr
 
-            ((self.outputLayer)).params.lr = ((self.outputLayer)).params.lr * cdf
+            ((self.outputLayer)).params.lr = ((self.outputLayer)).params.lr * (1-cdf)
 
             self.n_trained += 1
             self.trainEnsemble(x)

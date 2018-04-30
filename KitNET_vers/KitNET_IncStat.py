@@ -10,6 +10,7 @@ from ML_models import dA_IncStat as AE
 # For licensing information, see the end of this document
 
 
+
 class KitNET:
     #n: the number of features in your input dataset (i.e., x \in R^n)
     #m: the maximum size of any autoencoder in the ensemble layer
