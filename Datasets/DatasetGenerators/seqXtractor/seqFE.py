@@ -158,7 +158,7 @@ class seqFE ():
 
                     for measure in range(len(dicts[d][e + '_' + str(w)])):
                         if measure != len(dicts[d][e + '_' + str(w)]) - 1:
-                            avg += float(measure / len(dicts[d]))
+                            avg += float(dicts[d][e + '_' + str(w)][measure] / len(dicts[d]))
 
                     if avg == 0:
                         probsPerEW.append(0.0)
@@ -171,7 +171,7 @@ class seqFE ():
         for w in self.windows:
 
             probsProt=self.hmmProt.get20Probs(dstPort,self.dstPortBuffer)
-            probsSrcIP=self.hmmProt.get20Probs(srcIP,self.srcIPBuffer)
+            probsSrcIP=self.hmmSrcIP.get20Probs(srcIP,self.srcIPBuffer)
             probsDstIP=self.hmmDstIP.get20Probs(dstIP,self.dstIPBuffer)
             probsSrcMac=self.hmmSrcMac.get20Probs(srcMAC,self.srcMacBuffer)
             probsDstMac=self.hmmDstMac.get20Probs(dstMAC,self.dstMacBuffer)
@@ -184,7 +184,7 @@ class seqFE ():
 
             probsVec.append(probsPerEW)
 
-
+        print(probsVec)
         return probsVec
 
 
