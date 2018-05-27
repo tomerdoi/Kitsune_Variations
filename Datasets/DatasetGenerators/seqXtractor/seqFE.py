@@ -1,5 +1,6 @@
 import ML_models.HMM as hmm
 import numpy as np
+import math
 
 #mac-mac,ip, ip-ip, ip_port-ip_port
 # windows: 10ms,100ms,1s,5s,10s
@@ -29,6 +30,8 @@ class seqFE ():
         self.host2WindowTSDelay={}
         self.host2WindowBR={}
         self.host2WindowFramelen={}
+        self.host2WindowBRtimestamps={}
+
 
         self.hmmProt=hmm.HMM(0)
         self.hmmSrcIP=hmm.HMM(0)
@@ -36,11 +39,34 @@ class seqFE ():
         self.hmmSrcMac=hmm.HMM(0)
         self.hmmDstMac=hmm.HMM(0)
 
+        self.dstPortBuffer=[]
+        self.srcIPBuffer=[]
+        self.dstIPBuffer=[]
+        self.srcMacBuffer=[]
+        self.dstMacBuffer=[]
 
-
+        self.buffer20Size=0
 
 
     def update (self,srcIP,srcMAC,srcPort,dstIP,dstMAC,dstPort,framelen,ts):
+
+
+
+        self.dstPortBuffer.append(dstPort)
+        self.srcIPBuffer.append(srcIP)
+        self.dstIPBuffer.append(dstIP)
+        self.srcMacBuffer.append(srcMAC)
+        self.dstMacBuffer.append(dstMAC)
+
+        self.buffer20Size+=1
+
+        if self.buffer20Size>20:
+            del self.dstPortBuffer[0]
+            del self.srcIPBuffer[0]
+            del self.dstIPBuffer[0]
+            del self.srcMacBuffer[0]
+            del self.dstMacBuffer[0]
+
 
         entities=[srcIP,srcMAC+'-'+dstMAC,srcIP+'-'+dstIP,srcIP+'_'+srcPort+'-'+dstIP+'_'+dstPort]
 
@@ -53,7 +79,10 @@ class seqFE ():
 
                 for w in self.windows:
                     self.host2WindowTSDelay[e + '_' + str(w)]=[]
+
                     self.host2WindowBR[e + '_' + str(w)]=[]
+                    self.host2WindowBRtimestamps[e + '_' + str(w)] = []
+
                     self.host2WindowFramelen[e + '_' + str(w)]=[]
 
                 lastProt=dstPort
@@ -64,21 +93,39 @@ class seqFE ():
 
 
 
+
+
+
+
+
             # updating entity Delay&BR&FrameLen
             for w in self.windows:
 
-                self.host2WindowTSDelay[e+'_'+str(w)].append(float(ts-self.host2LastTS[e]))
+                #bitrate handler
+
+                self.host2WindowBRtimestamps[e + '_' + str(w)].append(ts)
                 self.host2WindowBR[e + '_' + str(w)].append(framelen)
+
+                self.host2WindowTSDelay[e+'_'+str(w)].append(float(ts-self.host2LastTS[e]))
                 self.host2WindowFramelen[e + '_' + str(w)].append(framelen)
 
                 while float(ts-self.host2WindowTSDelay[e+'_'+str(w)][0])>w and len(self.host2WindowTSDelay[e+'_'+str(w)])>1:
                     del self.host2WindowTSDelay[e+'_'+str(w)][0]
                     del self.host2WindowBR[e+'_'+str(w)][0]
                     del self.host2WindowFramelen[e+'_'+str(w)][0]
+                    del self.host2WindowBRtimestamps[e + '_' + str(w)][0]
 
             self.host2LastTS[e] = ts
 
-            # updating entity HMMs
+
+
+        lastProt = dstPort
+        lastSrcIp = srcIP
+        lastDstIp = dstIP
+        lastSrcMac = srcMAC
+        lastDstMac = dstMAC
+
+        # updating entity HMMs
 
         self.hmmProt.getNewState(dstPort)
         self.hmmSrcIP.getNewState(srcIP)
@@ -86,11 +133,62 @@ class seqFE ():
         self.hmmSrcMac.getNewState(srcMAC)
         self.hmmDstMac.getNewState(dstMAC)
 
-        lastProt = dstPort
-        lastSrcIp = srcIP
-        lastDstIp = dstIP
-        lastSrcMac = srcMAC
-        lastDstMac = dstMAC
+        #calculate probs vector
+
+        # extracting probs by 4X5 entityXwindowX[BR,Framelen,Delay]
+
+        probsPerEW = []
+
+        dicts = [self.host2WindowTSDelay, self.host2WindowBR, self.host2WindowFramelen]
+        br = 0
+        # calculate br of last window
+        instances = [float(ts - self.host2LastTS[e]), br, float(framelen)]
+
+        for w in self.windows:
+            for e in entities:
+
+                br = 0
+                for b in self.host2WindowBR[e + '_' + str(w)]:
+                    br += b
+
+                instances[1] = br
+
+                for d in range(len(dicts)):
+                    avg = 0.0
+
+                    for measure in range(len(dicts[d][e + '_' + str(w)])):
+                        if measure != len(dicts[d][e + '_' + str(w)]) - 1:
+                            avg += float(measure / len(dicts[d]))
+
+                    if avg == 0:
+                        probsPerEW.append(0.0)
+                    else:
+                        probsPerEW.append(max(float(1 - math.fabs(avg - instances[d]) / avg),0))
+        #HMMs
+
+        probsVec=[]
+
+        for w in self.windows:
+
+            probsProt=self.hmmProt.get20Probs(dstPort,self.dstPortBuffer)
+            probsSrcIP=self.hmmProt.get20Probs(srcIP,self.srcIPBuffer)
+            probsDstIP=self.hmmDstIP.get20Probs(dstIP,self.dstIPBuffer)
+            probsSrcMac=self.hmmSrcMac.get20Probs(srcMAC,self.srcMacBuffer)
+            probsDstMac=self.hmmDstMac.get20Probs(dstMAC,self.dstMacBuffer)
+
+            probsVec.append(probsProt)
+            probsVec.append(probsSrcIP)
+            probsVec.append(probsDstIP)
+            probsVec.append(probsSrcMac)
+            probsVec.append(probsDstMac)
+
+            probsVec.append(probsPerEW)
+
+
+        return probsVec
+
+
+
 
 
 
@@ -100,8 +198,27 @@ s.update('2.2.2.2','BB:BB:BB:BB:BB:BB','6000','6.2.2.2','FF:FF:FF:FF:FF:FF','90'
 s.update('3.3.3.3','CC:CC:CC:CC:CC:CC','7000','7.2.2.2','GG:GG:GG:GG:GG:GG','100',1280,1.3)
 s.update('4.4.4.4','DD:DD:DD:DD:DD:DD','8000','8.2.2.2','HH:HH:HH:HH:HH:HH','110',1290,1.4)
 s.update('5.5.5.5','EE:EE:EE:EE:EE:EE','9000','9.2.2.2','II:II:II:II:II:II','120',12100,1.5)
-
+s.update('1.1.1.1','AA:AA:AA:AA:AA:AA','5000','2.2.2.2','BB:BB:BB:BB:BB:BB','80',1260,1.6)
+s.update('2.2.2.2','BB:BB:BB:BB:BB:BB','6000','6.2.2.2','FF:FF:FF:FF:FF:FF','90',1270,1.7)
 s.update('3.3.3.3','CC:CC:CC:CC:CC:CC','7000','7.2.2.2','GG:GG:GG:GG:GG:GG','100',1280,1.8)
+s.update('4.4.4.4','DD:DD:DD:DD:DD:DD','8000','8.2.2.2','HH:HH:HH:HH:HH:HH','110',1290,1.9)
+s.update('5.5.5.5','EE:EE:EE:EE:EE:EE','9000','9.2.2.2','II:II:II:II:II:II','120',12100,2.5)
+s.update('1.1.1.1','AA:AA:AA:AA:AA:AA','5000','2.2.2.2','BB:BB:BB:BB:BB:BB','80',1260,2.1)
+s.update('2.2.2.2','BB:BB:BB:BB:BB:BB','6000','6.2.2.2','FF:FF:FF:FF:FF:FF','90',1270,2.2)
+s.update('3.3.3.3','CC:CC:CC:CC:CC:CC','7000','7.2.2.2','GG:GG:GG:GG:GG:GG','100',1280,2.3)
+s.update('4.4.4.4','DD:DD:DD:DD:DD:DD','8000','8.2.2.2','HH:HH:HH:HH:HH:HH','110',1290,2.4)
+s.update('5.5.5.5','EE:EE:EE:EE:EE:EE','9000','9.2.2.2','II:II:II:II:II:II','120',12100,2.5)
+s.update('1.1.1.1','AA:AA:AA:AA:AA:AA','5000','2.2.2.2','BB:BB:BB:BB:BB:BB','80',1260,3.1)
+s.update('2.2.2.2','BB:BB:BB:BB:BB:BB','6000','6.2.2.2','FF:FF:FF:FF:FF:FF','90',1270,3.2)
+s.update('3.3.3.3','CC:CC:CC:CC:CC:CC','7000','7.2.2.2','GG:GG:GG:GG:GG:GG','100',1280,3.3)
+s.update('4.4.4.4','DD:DD:DD:DD:DD:DD','8000','8.2.2.2','HH:HH:HH:HH:HH:HH','110',1290,3.4)
+s.update('5.5.5.5','EE:EE:EE:EE:EE:EE','9000','9.2.2.2','II:II:II:II:II:II','120',12100,3.5)
+s.update('1.1.1.1','AA:AA:AA:AA:AA:AA','5000','2.2.2.2','BB:BB:BB:BB:BB:BB','80',1260,4.1)
+s.update('2.2.2.2','BB:BB:BB:BB:BB:BB','6000','6.2.2.2','FF:FF:FF:FF:FF:FF','90',1270,4.2)
+s.update('3.3.3.3','CC:CC:CC:CC:CC:CC','7000','7.2.2.2','GG:GG:GG:GG:GG:GG','100',1280,4.3)
+s.update('4.4.4.4','DD:DD:DD:DD:DD:DD','8000','8.2.2.2','HH:HH:HH:HH:HH:HH','110',1290,4.4)
+s.update('5.5.5.5','EE:EE:EE:EE:EE:EE','9000','9.2.2.2','II:II:II:II:II:II','120',12100,4.5)
+s.update('3.3.3.3','CC:CC:CC:CC:CC:CC','7000','7.2.2.2','GG:GG:GG:GG:GG:GG','100',1280,4.8)
 print('finished')
 
 

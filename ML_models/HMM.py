@@ -1,6 +1,8 @@
 import numpy as np
 import random
 import copy
+from numpy import linalg as LA
+
 
 class HMM (object):
     def __init__ (self,NumOfStates):
@@ -18,6 +20,45 @@ class HMM (object):
 
         self.m_transitionMatrix=copy
         self.numOfStates+=1
+
+
+    def getProbForTransition (self,state,transitionMatrix,isMatrixGiven=0,currState=-1):
+
+        tempState=0
+        if currState!=-1:
+            tempState=self.currState
+            self.currState=currState
+
+        tempMat=0
+        if isMatrixGiven!=0:
+            tempMat=self.m_transitionMatrix
+            self.m_transitionMatrix=transitionMatrix
+
+        transition=self.m_transitionMatrix[self.nomimalToIndex[self.currState]][self.nomimalToIndex[state]]
+
+        sum=0
+        for i in range(self.numOfStates):
+            sum+=self.m_transitionMatrix[self.nomimalToIndex[self.currState]][i]
+
+        if isMatrixGiven!=0:
+            self.m_transitionMatrix=tempMat
+        if currState!=-1:
+            self.currState=tempState
+
+        return float(transition/sum)
+
+    def get20Probs (self,newState,last20InstancesVec):
+
+        probsVec=[]
+
+        if len(last20InstancesVec)<20:
+            return np.zeros(20)
+        for i in range(1,21):
+            m2=LA.matrix_power(self.m_transitionMatrix,i)
+            prob=self.getProbForTransition(state=newState,currState=last20InstancesVec[i-1],transitionMatrix=m2,isMatrixGiven=1)
+            probsVec.append(prob)
+
+        return probsVec
 
     def getNewState(self,state):
 
