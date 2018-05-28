@@ -53,9 +53,35 @@ class HMM (object):
 
         if len(last20InstancesVec)<20:
             return np.zeros(20)
+
+
+
+        #convert frequencies to probs matrix
+
+        m2=np.zeros((self.m_transitionMatrix.shape[0],self.m_transitionMatrix.shape[1]))
+
+
+
+        for i in range(self.m_transitionMatrix.shape[0]):
+            for j in range(self.m_transitionMatrix.shape[1]):
+                m2[i][j]=self.m_transitionMatrix[i][j]
+
+            sum = 0
+            for j in range(m2.shape[1]):
+
+                sum += m2[i][j]
+
+            for j in range(m2.shape[1]):
+
+               m2[i][j]=float(m2[i][j]/sum)
+
+
+
+
+
         for i in range(1,21):
-            m2=LA.matrix_power(self.m_transitionMatrix,i)
-            prob=self.getProbForTransition(state=newState,currState=last20InstancesVec[i-1],transitionMatrix=m2,isMatrixGiven=1)
+            m3=LA.matrix_power(m2,i)
+            prob=self.getProbForTransition(state=newState,currState=last20InstancesVec[i-1],transitionMatrix=m3,isMatrixGiven=1)
             probsVec.append(prob)
 
         return probsVec

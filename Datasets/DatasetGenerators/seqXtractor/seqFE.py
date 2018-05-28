@@ -23,7 +23,7 @@ class seqFE ():
 
     def __init__ (self):
 
-        self.windows=[0.01,0.1,1,5,10] # in seconds
+        self.windows=[5,10,15,20,25] # in seconds
         self.entities=[] #all the hosts in the network
         self.host2LastTS = {}
 
@@ -176,13 +176,13 @@ class seqFE ():
             probsSrcMac=self.hmmSrcMac.get20Probs(srcMAC,self.srcMacBuffer)
             probsDstMac=self.hmmDstMac.get20Probs(dstMAC,self.dstMacBuffer)
 
-            probsVec.append(probsProt)
-            probsVec.append(probsSrcIP)
-            probsVec.append(probsDstIP)
-            probsVec.append(probsSrcMac)
-            probsVec.append(probsDstMac)
+            probsVec.extend(probsProt)
+            probsVec.extend(probsSrcIP)
+            probsVec.extend(probsDstIP)
+            probsVec.extend(probsSrcMac)
+            probsVec.extend(probsDstMac)
 
-            probsVec.append(probsPerEW)
+            probsVec.extend(probsPerEW)
 
         print(probsVec)
         return probsVec
@@ -193,7 +193,14 @@ class seqFE ():
 
 
 s=seqFE()
-s.update('1.1.1.1','AA:AA:AA:AA:AA:AA','5000','2.2.2.2','BB:BB:BB:BB:BB:BB','80',1260,1.1)
+
+# for i in range(21):
+#     if i%2==0:
+#         s.update('1.1.1.1','AA:AA:AA:AA:AA:AA','5000','2.2.2.2','BB:BB:BB:BB:BB:BB','80',float(i*100),float(i*0.1))
+#
+#     else:
+#         s.update('2.2.2.2', 'BB:BB:BB:BB:BB:BB', '10000', '3.3.3.3', 'CC:CC:CC:CC:CC:CC', '53', float(i*130), float(i * 0.1))
+
 s.update('2.2.2.2','BB:BB:BB:BB:BB:BB','6000','6.2.2.2','FF:FF:FF:FF:FF:FF','90',1270,1.2)
 s.update('3.3.3.3','CC:CC:CC:CC:CC:CC','7000','7.2.2.2','GG:GG:GG:GG:GG:GG','100',1280,1.3)
 s.update('4.4.4.4','DD:DD:DD:DD:DD:DD','8000','8.2.2.2','HH:HH:HH:HH:HH:HH','110',1290,1.4)
@@ -219,6 +226,11 @@ s.update('3.3.3.3','CC:CC:CC:CC:CC:CC','7000','7.2.2.2','GG:GG:GG:GG:GG:GG','100
 s.update('4.4.4.4','DD:DD:DD:DD:DD:DD','8000','8.2.2.2','HH:HH:HH:HH:HH:HH','110',1290,4.4)
 s.update('5.5.5.5','EE:EE:EE:EE:EE:EE','9000','9.2.2.2','II:II:II:II:II:II','120',12100,4.5)
 s.update('3.3.3.3','CC:CC:CC:CC:CC:CC','7000','7.2.2.2','GG:GG:GG:GG:GG:GG','100',1280,4.8)
+
+s.update('3.3.3.3','DD:DD:DD:DD:DD:DD','7000','7.2.2.2','GG:GG:GG:GG:GG:GG','100',1280,5.0)
+s.update('3.3.3.3','DD:DD:DD:DD:DD:DD','7000','7.2.2.2','GG:GG:GG:GG:GG:GG','100',1280,6.0)
+
+
 print('finished')
 
 
