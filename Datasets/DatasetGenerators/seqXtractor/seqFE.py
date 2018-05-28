@@ -164,6 +164,7 @@ class seqFE ():
                         probsPerEW.append(0.0)
                     else:
                         probsPerEW.append(float(math.fabs(avg - instances[d]) / avg))
+
         #HMMs
 
         probsVec=[]
