@@ -163,7 +163,7 @@ class seqFE ():
                     if avg == 0:
                         probsPerEW.append(0.0)
                     else:
-                        probsPerEW.append(max(float(1 - math.fabs(avg - instances[d]) / avg),0))
+                        probsPerEW.append(float(math.fabs(avg - instances[d]) / avg))
         #HMMs
 
         probsVec=[]
