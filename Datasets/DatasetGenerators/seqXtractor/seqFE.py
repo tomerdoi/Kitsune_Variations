@@ -48,6 +48,26 @@ class seqFE ():
         self.buffer20Size=0
 
 
+    def getseqFEHeaderes (self):
+
+        headers=[]
+
+        features=['delay','bitrate','framelen']
+        entities = ['srcIP', 'srcMAC' + '-' + 'dstMAC', 'srcIP' + '-' + 'dstIP','srcIP' + '_' + 'srcPort' + '-' + 'dstIP' + '_' + 'dstPort']
+
+        for f in features:
+            for w in self.windows:
+                for e in entities:
+                    headers.append(str(f)+'_'+str(w)+'_'+str(e))
+
+        HMMs=['hmmProt','hmmSrcIP','hmmDstIP','hmmSrcMac','hmmDstMac']
+
+        for h in HMMs:
+            for i in range(1,21):
+                headers.append(str(h)+'_'+str(i))
+
+        return headers
+
     def update (self,srcIP,srcMAC,srcPort,dstIP,dstMAC,dstPort,framelen,ts):
 
 
@@ -94,10 +114,6 @@ class seqFE ():
 
 
 
-
-
-
-
             # updating entity Delay&BR&FrameLen
             for w in self.windows:
 
@@ -109,7 +125,7 @@ class seqFE ():
                 self.host2WindowTSDelay[e+'_'+str(w)].append(float(ts-self.host2LastTS[e]))
                 self.host2WindowFramelen[e + '_' + str(w)].append(framelen)
 
-                while float(ts-self.host2WindowTSDelay[e+'_'+str(w)][0])>w and len(self.host2WindowTSDelay[e+'_'+str(w)])>1:
+                while float(ts-self.host2WindowBRtimestamps[e+'_'+str(w)][0])>w and len(self.host2WindowTSDelay[e+'_'+str(w)])>1:
                     del self.host2WindowTSDelay[e+'_'+str(w)][0]
                     del self.host2WindowBR[e+'_'+str(w)][0]
                     del self.host2WindowFramelen[e+'_'+str(w)][0]
@@ -177,13 +193,14 @@ class seqFE ():
             probsSrcMac=self.hmmSrcMac.get20Probs(srcMAC,self.srcMacBuffer)
             probsDstMac=self.hmmDstMac.get20Probs(dstMAC,self.dstMacBuffer)
 
-            probsVec.extend(probsProt)
-            probsVec.extend(probsSrcIP)
-            probsVec.extend(probsDstIP)
-            probsVec.extend(probsSrcMac)
-            probsVec.extend(probsDstMac)
+        probsVec.extend(probsPerEW)
+        probsVec.extend(probsProt)
+        probsVec.extend(probsSrcIP)
+        probsVec.extend(probsDstIP)
+        probsVec.extend(probsSrcMac)
+        probsVec.extend(probsDstMac)
 
-            probsVec.extend(probsPerEW)
+
 
         print(probsVec)
         return probsVec
@@ -195,41 +212,12 @@ class seqFE ():
 
 s=seqFE()
 
-# for i in range(21):
-#     if i%2==0:
-#         s.update('1.1.1.1','AA:AA:AA:AA:AA:AA','5000','2.2.2.2','BB:BB:BB:BB:BB:BB','80',float(i*100),float(i*0.1))
-#
-#     else:
-#         s.update('2.2.2.2', 'BB:BB:BB:BB:BB:BB', '10000', '3.3.3.3', 'CC:CC:CC:CC:CC:CC', '53', float(i*130), float(i * 0.1))
 
-s.update('2.2.2.2','BB:BB:BB:BB:BB:BB','6000','6.2.2.2','FF:FF:FF:FF:FF:FF','90',1270,1.2)
-s.update('3.3.3.3','CC:CC:CC:CC:CC:CC','7000','7.2.2.2','GG:GG:GG:GG:GG:GG','100',1280,1.3)
-s.update('4.4.4.4','DD:DD:DD:DD:DD:DD','8000','8.2.2.2','HH:HH:HH:HH:HH:HH','110',1290,1.4)
-s.update('5.5.5.5','EE:EE:EE:EE:EE:EE','9000','9.2.2.2','II:II:II:II:II:II','120',12100,1.5)
-s.update('1.1.1.1','AA:AA:AA:AA:AA:AA','5000','2.2.2.2','BB:BB:BB:BB:BB:BB','80',1260,1.6)
-s.update('2.2.2.2','BB:BB:BB:BB:BB:BB','6000','6.2.2.2','FF:FF:FF:FF:FF:FF','90',1270,1.7)
-s.update('3.3.3.3','CC:CC:CC:CC:CC:CC','7000','7.2.2.2','GG:GG:GG:GG:GG:GG','100',1280,1.8)
-s.update('4.4.4.4','DD:DD:DD:DD:DD:DD','8000','8.2.2.2','HH:HH:HH:HH:HH:HH','110',1290,1.9)
-s.update('5.5.5.5','EE:EE:EE:EE:EE:EE','9000','9.2.2.2','II:II:II:II:II:II','120',12100,2.5)
-s.update('1.1.1.1','AA:AA:AA:AA:AA:AA','5000','2.2.2.2','BB:BB:BB:BB:BB:BB','80',1260,2.1)
-s.update('2.2.2.2','BB:BB:BB:BB:BB:BB','6000','6.2.2.2','FF:FF:FF:FF:FF:FF','90',1270,2.2)
-s.update('3.3.3.3','CC:CC:CC:CC:CC:CC','7000','7.2.2.2','GG:GG:GG:GG:GG:GG','100',1280,2.3)
-s.update('4.4.4.4','DD:DD:DD:DD:DD:DD','8000','8.2.2.2','HH:HH:HH:HH:HH:HH','110',1290,2.4)
-s.update('5.5.5.5','EE:EE:EE:EE:EE:EE','9000','9.2.2.2','II:II:II:II:II:II','120',12100,2.5)
-s.update('1.1.1.1','AA:AA:AA:AA:AA:AA','5000','2.2.2.2','BB:BB:BB:BB:BB:BB','80',1260,3.1)
-s.update('2.2.2.2','BB:BB:BB:BB:BB:BB','6000','6.2.2.2','FF:FF:FF:FF:FF:FF','90',1270,3.2)
-s.update('3.3.3.3','CC:CC:CC:CC:CC:CC','7000','7.2.2.2','GG:GG:GG:GG:GG:GG','100',1280,3.3)
-s.update('4.4.4.4','DD:DD:DD:DD:DD:DD','8000','8.2.2.2','HH:HH:HH:HH:HH:HH','110',1290,3.4)
-s.update('5.5.5.5','EE:EE:EE:EE:EE:EE','9000','9.2.2.2','II:II:II:II:II:II','120',12100,3.5)
-s.update('1.1.1.1','AA:AA:AA:AA:AA:AA','5000','2.2.2.2','BB:BB:BB:BB:BB:BB','80',1260,4.1)
-s.update('2.2.2.2','BB:BB:BB:BB:BB:BB','6000','6.2.2.2','FF:FF:FF:FF:FF:FF','90',1270,4.2)
-s.update('3.3.3.3','CC:CC:CC:CC:CC:CC','7000','7.2.2.2','GG:GG:GG:GG:GG:GG','100',1280,4.3)
-s.update('4.4.4.4','DD:DD:DD:DD:DD:DD','8000','8.2.2.2','HH:HH:HH:HH:HH:HH','110',1290,4.4)
-s.update('5.5.5.5','EE:EE:EE:EE:EE:EE','9000','9.2.2.2','II:II:II:II:II:II','120',12100,4.5)
-s.update('3.3.3.3','CC:CC:CC:CC:CC:CC','7000','7.2.2.2','GG:GG:GG:GG:GG:GG','100',1280,4.8)
 
-s.update('3.3.3.3','DD:DD:DD:DD:DD:DD','7000','7.2.2.2','GG:GG:GG:GG:GG:GG','100',1280,5.0)
-s.update('3.3.3.3','DD:DD:DD:DD:DD:DD','7000','7.2.2.2','GG:GG:GG:GG:GG:GG','100',1280,6.0)
+# s.update('1.1.1.1','AA:AA:AA:AA:AA:AA','1000','2.2.2.2','BB:BB:BB:BB:BB:BB','80',1280,1.1)
+# s.update('2.2.2.2','CC:CC:CC:CC:CC:CC','2000','3.3.3.3','DD:DD:DD:DD:DD:DD','90',1280,1.2)
+# s.update('3.3.3.3','DD:DD:DD:DD:DD:DD','3000','4.4.4.4','EE:EE:EE:EE:EE:EE','100',1290,1.3)
+
 
 
 print('finished')
