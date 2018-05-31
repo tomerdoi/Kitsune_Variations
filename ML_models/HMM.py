@@ -73,9 +73,7 @@ class HMM (object):
 
             for j in range(m2.shape[1]):
 
-               m2[i][j]=float(m2[i][j]/sum)
-
-
+               m2[i][j]=float(m2[i][j]/(sum))
 
 
 
